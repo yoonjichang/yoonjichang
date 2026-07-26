@@ -24,11 +24,10 @@ export default function WorkoutSession() {
   });
 
   // ⏱️ 타이머 및 휴식 시간 설정 상태
-  const [restTimeSetting, setRestTimeSetting] = useState(60); // 기본 설정 휴식 시간 (초)
-  const [timeLeft, setTimeLeft] = useState(0); // 남은 휴식 시간
-  const [isTimerActive, setIsTimerActive] = useState(false); // 타이머 작동 여부
+  const [restTimeSetting, setRestTimeSetting] = useState(60);
+  const [timeLeft, setTimeLeft] = useState(0);
+  const [isTimerActive, setIsTimerActive] = useState(false);
 
-  // 타이머 카운트다운 로직
   useEffect(() => {
     let timer = null;
     if (isTimerActive && timeLeft > 0) {
@@ -48,14 +47,22 @@ export default function WorkoutSession() {
     setWorkoutData(updated);
   };
 
-  // 세트 완료(체크) 토글 + 휴식 타이머 자동 실행 핸들러
+  // ⚡ 무게 빠르게 더하고 빼는 함수 (+5kg, +10kg 등)
+  const handleAddWeight = (exerciseName, setIndex, amount) => {
+    const updated = { ...workoutData };
+    const currentWeight = Number(updated[exerciseName][setIndex].weight) || 0;
+    const newWeight = Math.max(0, currentWeight + amount); // 음수 방지
+    updated[exerciseName][setIndex].weight = newWeight === 0 ? '' : newWeight.toString();
+    setWorkoutData(updated);
+  };
+
+  // 세트 완료 토글 + 휴식 타이머 자동 실행
   const toggleSetDone = (exerciseName, setIndex) => {
     const updated = { ...workoutData };
     const targetSet = updated[exerciseName][setIndex];
     targetSet.done = !targetSet.done;
     setWorkoutData(updated);
 
-    // 방금 세트를 '완료' 상태로 바꿨을 때만 휴식 타이머 자동 시작!
     if (targetSet.done) {
       setTimeLeft(restTimeSetting);
       setIsTimerActive(true);
@@ -78,12 +85,23 @@ export default function WorkoutSession() {
     setWorkoutData(updated);
   };
 
+  // 🗑️ 세트 삭제하기 (최소 1개는 남기도록 방어 코드 추가)
+  const removeSet = (exerciseName) => {
+    const updated = { ...workoutData };
+    const currentSets = updated[exerciseName];
+    if (currentSets.length <= 1) {
+      alert('최소 1개의 세트는 유지해야 합니다!');
+      return;
+    }
+    currentSets.pop(); // 맨 마지막 세트 제거
+    setWorkoutData(updated);
+  };
+
   const handleFinishWorkout = () => {
     alert('🎉 오늘 운동을 완벽하게 끝냈습니다! 고생하셨습니다.');
     navigate('/routine');
   };
 
-  // 초를 mm:ss 형식으로 변환하는 도우미 함수
   const formatTime = (seconds) => {
     const mins = Math.floor(seconds / 60);
     const secs = seconds % 60;
@@ -116,7 +134,6 @@ export default function WorkoutSession() {
           )}
         </div>
 
-        {/* 사용자 사전 지정 휴식 시간 선택 셀렉트바 */}
         <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
           <span style={{ fontSize: '0.85rem', color: 'var(--sub)' }}>휴식 설정:</span>
           <select 
@@ -176,35 +193,48 @@ export default function WorkoutSession() {
               <h3 style={{ fontSize: '1.3rem', color: 'var(--text)', display: 'flex', alignItems: 'center', gap: '10px' }}>
                 <span style={{ color: 'var(--primary)' }}>#</span> {exName}
               </h3>
-              <button 
-                onClick={() => addSet(exName)}
-                style={{ 
-                  background: 'transparent', border: '1px solid var(--border)', color: 'var(--sub)', 
-                  padding: '6px 12px', borderRadius: '8px', fontSize: '0.85rem', cursor: 'pointer' 
-                }}
-              >
-                + 세트 추가
-              </button>
+              
+              {/* 세트 추가 / 삭제 버튼 그룹 */}
+              <div style={{ display: 'flex', gap: '8px' }}>
+                <button 
+                  onClick={() => removeSet(exName)}
+                  style={{ 
+                    background: 'transparent', border: '1px solid #ff4d4d', color: '#ff4d4d', 
+                    padding: '6px 12px', borderRadius: '8px', fontSize: '0.85rem', cursor: 'pointer' 
+                  }}
+                >
+                  - 세트 삭제
+                </button>
+                <button 
+                  onClick={() => addSet(exName)}
+                  style={{ 
+                    background: 'transparent', border: '1px solid var(--border)', color: 'var(--sub)', 
+                    padding: '6px 12px', borderRadius: '8px', fontSize: '0.85rem', cursor: 'pointer' 
+                  }}
+                >
+                  + 세트 추가
+                </button>
+              </div>
             </div>
 
             <div style={{ 
-              display: 'grid', gridTemplateColumns: '60px 1fr 1fr 80px', gap: '10px', 
+              display: 'grid', gridTemplateColumns: '60px 1.4fr 1fr 80px', gap: '10px', 
               marginBottom: '10px', fontSize: '0.85rem', color: 'var(--sub)', fontWeight: '600', textAlign: 'center' 
             }}>
               <div>세트</div>
-              <div>중량 (kg)</div>
+              <div>중량 (kg) & 빠른 조절</div>
               <div>횟수 (rep)</div>
               <div>완료</div>
             </div>
 
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
               {workoutData[exName]?.map((setItem, setIdx) => (
                 <div 
                   key={setIdx}
                   style={{ 
-                    display: 'grid', gridTemplateColumns: '60px 1fr 1fr 80px', gap: '10px', alignItems: 'center',
+                    display: 'grid', gridTemplateColumns: '60px 1.4fr 1fr 80px', gap: '10px', alignItems: 'center',
                     backgroundColor: setItem.done ? '#1a261a' : '#121212', 
-                    padding: '8px', borderRadius: '8px', border: setItem.done ? '1px solid #2e7d32' : '1px solid var(--border)',
+                    padding: '12px', borderRadius: '8px', border: setItem.done ? '1px solid #2e7d32' : '1px solid var(--border)',
                     transition: '0.2s'
                   }}
                 >
@@ -212,17 +242,45 @@ export default function WorkoutSession() {
                     {setItem.set}세트
                   </div>
 
-                  <input 
-                    type="number" 
-                    placeholder="0"
-                    value={setItem.weight}
-                    onChange={(e) => handleInputChange(exName, setIdx, 'weight', e.target.value)}
-                    style={{ 
-                      width: '100%', padding: '10px', borderRadius: '6px', backgroundColor: '#1a1a1a', 
-                      border: '1px solid #333', color: '#fff', textAlign: 'center', fontSize: '1rem', fontWeight: '600' 
-                    }}
-                  />
+                  {/* 무게 입력 및 +5kg, +10kg 빠른 조절 버튼 */}
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                    <input 
+                      type="number" 
+                      placeholder="0"
+                      value={setItem.weight}
+                      onChange={(e) => handleInputChange(exName, setIdx, 'weight', e.target.value)}
+                      style={{ 
+                        width: '100%', padding: '8px', borderRadius: '6px', backgroundColor: '#1a1a1a', 
+                        border: '1px solid #333', color: '#fff', textAlign: 'center', fontSize: '1rem', fontWeight: '600' 
+                      }}
+                    />
+                    {/* 빠른 무게 조절 버튼 바 */}
+                    <div style={{ display: 'flex', justifyContent: 'space-between', gap: '4px' }}>
+                      <button 
+                        type="button" 
+                        onClick={() => handleAddWeight(exName, setIdx, -5)}
+                        style={{ flex: 1, backgroundColor: '#222', border: '1px solid #333', color: '#aaa', fontSize: '0.7rem', padding: '3px 0', borderRadius: '4px', cursor: 'pointer' }}
+                      >
+                        -5
+                      </button>
+                      <button 
+                        type="button" 
+                        onClick={() => handleAddWeight(exName, setIdx, 5)}
+                        style={{ flex: 1, backgroundColor: '#222', border: '1px solid #333', color: 'var(--primary)', fontSize: '0.7rem', padding: '3px 0', borderRadius: '4px', cursor: 'pointer', fontWeight: '700' }}
+                      >
+                        +5
+                      </button>
+                      <button 
+                        type="button" 
+                        onClick={() => handleAddWeight(exName, setIdx, 10)}
+                        style={{ flex: 1, backgroundColor: '#222', border: '1px solid #333', color: 'var(--primary)', fontSize: '0.7rem', padding: '3px 0', borderRadius: '4px', cursor: 'pointer', fontWeight: '700' }}
+                      >
+                        +10
+                      </button>
+                    </div>
+                  </div>
 
+                  {/* 횟수 입력 */}
                   <input 
                     type="number" 
                     placeholder="0"
@@ -234,6 +292,7 @@ export default function WorkoutSession() {
                     }}
                   />
 
+                  {/* 완료 체크 버튼 */}
                   <div style={{ textAlign: 'center' }}>
                     <button 
                       onClick={() => toggleSetDone(exName, setIdx)}
