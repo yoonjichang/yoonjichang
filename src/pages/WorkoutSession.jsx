@@ -2,13 +2,113 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 
 const EXERCISE_DATABASE = {
-  '가슴': ['벤치프레스', '인클라인 벤치프레스', '디클라인 벤치프레스', '덤벨 프레스', '인클라인 덤벨 프레스', '덤벨 플라이', '딥스', '푸시업', '체스트 프레스 머신', '펙덱 플라이'],
-  '등': ['데드리프트', '랫 풀다운', '바벨 로우', '시티드 로우', '턱걸이(풀업)', '원 암 덤벨 로우', '티바 로우', '랫 풀다운(언더그립)', '케이블 풀다운', '백 익스텐션'],
-  '하체': ['바벨 스쿼트', '프론트 스쿼트', '레그 프레스', '레그 컬', '레그 익스텐션', '런지', '카프 레이즈', '불가리안 스플릿 스쿼트', '아파트 핵 스쿼트', '스탠딩 레그 컬'],
-  '어깨': ['오버헤드 프레스', '사이드 레터럴 레이즈', '덤벨 숄더 프레스', '페이스 풀', '프론트 레이즈', '벤트오버 레이즈', 'ARNOLD 프레스', '업라이트 로우', '케이블 사이드 레터럴 레이즈'],
-  '팔': ['바벨 컬', '덤벨 컬', '해머 컬', '프리처 컬', '트라이셉스 푸시다운', '라잉 트라이셉스 익스텐션', '오버헤드 덤벨 익스텐션', '케이블 오버헤드 익스텐션', '킥백'],
-  '복근/코어': ['플랭크', '행잉 레그 레이즈', '크런치', '케이블 크런치', '앱휠(복근 롤아웃)', '러시안 트위스트', '레그 레이즈'],
-  '유산소': ['런닝머신(인터벌)', '천국의 계단(스텝밀)', '사이클', '로잉 머신', '버피 테스트', '줄넘기']
+  '가슴': [
+    '벤치프레스', '스미스머신 벤치프레스', '스미스머신 인클라인 벤치프레스', '덤벨 벤치프레스', 
+    '인클라인 덤벨 벤치프레스', '덤벨 플라이', '스탠딩 케이블 플라이', '인클라인 벤치프레스', 
+    '딥스', '중량 딥스', '인클라인 덤벨 플라이', '푸시업', '중량 푸시업', '힌두 푸시업', 
+    '아처 푸시업', '클로즈그립 푸시업', '체스트 프레스 머신', '펙덱 플라이 머신', 
+    '인클라인 벤치프레스 머신', '덤벨 풀오버', '시티드 딥스 머신', '로우 풀리 케이블 플라이', 
+    '해머 벤치프레스', '스포토 벤치프레스', '어시스트 딥스 머신', '디클라인 벤치프레스', 
+    '바벨 플로어 프레스', '클랩 푸시업', '디클라인 덤벨 플라이', '디클라인 푸시업', 
+    '인클라인 푸시업', '무릎 푸시업', '파이크 푸시업', '디클라인 체스트 프레스 머신', 
+    '인클라인 덤벨 트위스트 프레스', '인클라인 케이블 플라이', '덤벨 스퀴즈 프레스'
+  ],
+  '등': [
+    '굿모닝 엑서사이즈', '풀업', '중량 풀업', '친업', '중량 친업', '바벨 로우', 
+    '펜들레이 로우', '바벨 인클라인 로우', '덤벨 인클라인 로우', '인버티드 로우', 
+    '덤벨 로우', '원 암 덤벨 로우', '바벨 풀오버', '시티드 로우 머신', '시티드 케이블 로우', 
+    '랫풀다운', '하이퍼 익스텐션', '중량 하이퍼 익스텐션', '백 익스텐션', '티바 로우 머신', 
+    '맥그립 랫풀다운', '패러럴그립 랫풀다운', '언더그립 랫풀다운', '스미스머신 로우', 
+    '케이블 암 풀다운', '정지 바벨 로우', '어시스트 풀업 머신', '플로어 시티드 케이블 로우', 
+    '언더그립 바벨 로우', '라잉 바벨 로우', '비하인드 넥 풀다운', '원암 케이블 풀다운', 
+    '원암 레터럴 와이드 풀다운', '로우 로우 머신', '원암 로우 로우 머신', '하이 로우 머신', 
+    '언더그립 하이 로우 머신', '원암 하이 로우 머신', '원암 시티드 케이블 로우', '랙풀', 
+    '스미스머신 랙풀', '미드 로우 머신', '백 익스텐션 머신', '패러럴그립 풀업', '원암 풀업', 
+    '원암 케이블 랫풀다운', '스탠딩 케이블 로우', '트랩바 로우', 'DY 로우 머신', 
+    '원암 케틀벨 로우', '하이풀리 케이블 로우', '클로즈그립 랫풀다운', '하이풀리 원암 케이블 로우', 
+    '로우풀리 원암 케이블 로우', '로우풀리 케이블 로프 로우', '체스트 서포티드 티바 로우', 
+    '프론트 풀다운 머신', '케이블 풀오버', '풀오버 머신', '케이블 이지바 푸시 다운', '리니어 로우 머신'
+  ],
+  '하체': [
+    '바벨 백스쿼트', '프론트 스쿼트', '저처 스쿼트', '바벨 불가리안 스플릿 스쿼트', 
+    '덤벨 불가리안 스플릿 스쿼트', '덤벨 고블릿 스쿼트', '맨몸 스플릿 스쿼트', '에어 스쿼트', 
+    '점프 스쿼트', '덤벨 스플릿 스쿼트', '케틀벨 고블릿 스쿼트', '컨벤셔널(바벨) 데드리프트', 
+    '루마니안 데드리프트', '스모 데드리프트', '레그 프레스', '레그 컬', 
+    '레그 익스텐션', '스탠딩 카프 레이즈', '힙 어덕션 머신', '힙 어브덕션 머신', 
+    '런지', '덤벨 런지', '스텝업', '중량 스텝업', '힙 쓰러스트', '바벨 힙 쓰러스트', 
+    '브이 스쿼트', '리버스 브이 스쿼트', '글루트 킥백 머신', '시티드 카프 레이즈', 
+    '정지 백 스쿼트', '트랩바 데드리프트', '스미스머신 스플릿 스쿼트', '스미스머신 데드리프트', 
+    '스미스머신 스쿼트', '케이블 힙 어브덕션', '핵 스쿼트 머신', '정지 데드리프트', 
+    '정지 스모 데드리프트', '바벨 박스 스쿼트', '바벨 프론트 랙 런지', '바벨 점프 스쿼트', 
+    '바벨 런지', '바벨 레터럴 런지', '바벨 스플릿 스쿼트', '바벨 스탠딩 카프 레이즈', 
+    '스티프 레그 데드리프트', '맨몸 오버헤드 스쿼트', '덤벨 스모 스쿼트', '덤벨 레그 컬', 
+    '덤벨 스쿼트', '바벨 핵 스쿼트', '시티드 레그 컬', '힙 쓰러스트 머신', '맨몸 카프 레이즈', 
+    '글루트 브릿지', '덤벨 루마니안 데드리프트', '라잉 힙 어브덕션', '싱글 레그 글루트 브릿지', 
+    '피스톨 박스 스쿼트', '사이드 라잉 클램', '맨몸 원레그 데드리프트', '바벨 원레그 데드리프트', 
+    '덤벨 원레그 데드리프트', '케틀벨 데드리프트', '케틀벨 스모 데드리프트', '덤벨 스모 데드리프트', 
+    '덤벨 스티프 레그 데드리프트', '덤벨 레터럴 런지', '케틀벨 레터럴 런지', '맨몸 레터럴 런지', 
+    '원레그 익스텐션', '원레그 컬', '원레그 프레스', '수평 레그 프레스', '수평 원레그 프레스', 
+    '시티드 원레그 컬', '노르딕 햄스트링 컬', '바벨 스모 스쿼트', '케틀벨 스모 스쿼트', 
+    '스모 에어 스쿼트', '피스톨 스쿼트', '덩키 킥', '케이블 킥백', '데피싯 데드리프트', 
+    '런지 트위스트', '케틀벨 런지 트위스트', '케이블 풀 스루', '몬스터 글루트 머신', 
+    '펜듈럼 스쿼트 머신', '리니어 핵 스쿼트 머신', '스미스머신 카프 레이즈', '덤벨 스탠딩 카프 레이즈', 
+    '바벨 백워드 런지', '케틀벨 백워드 런지', '맨몸 백워드 런지', '스탠딩 햄스트링 컬 머신', 
+    '글루트 햄 레이즈', '스미스머신 불가리안 스플릿 스쿼트', '벨트 스쿼트 머신', '세이프티바 스쿼트', 
+    '스미스머신 힙 쓰러스트', '덩키 카프 레이즈', '트랩바 스쿼트', '덤벨 프론트 스쿼트', 
+    '보수볼 원레그 데드리프트', '보수볼 덤벨 원레그 데드리프트', '레버리지 스쿼트 머신', 
+    '파이어 하이드런트', '와이드 에어 스쿼트', '스탠딩 힙 어브덕션', '로터리 카프 머신', 
+    '케틀벨 원레그 데드리프트', '바벨 오버헤드 스쿼트', '시시 스쿼트', '중량 시시 스쿼트', 
+    '스미스머신 핵 스쿼트', '덤벨 워킹 런지'
+  ],
+  '어깨': [
+    '오버헤드 프레스', '스미스머신 오버헤드 프레스', '스미스머신 슈러그', '덤벨 숄더 프레스', 
+    '덤벨 레터럴 레이즈', '벤트오버 덤벨 레터럴 레이즈', '아놀드 덤벨 프레스', '숄더 프레스 머신', 
+    '비하인드 넥 프레스', '덤벨 프론트 레이즈', '덤벨 슈러그', '바벨 슈러그', '페이스 풀', 
+    '핸드스탠드', '핸드스탠드 푸시업', '케이블 리버스 플라이', '바벨 업라이트 로우', 
+    '덤벨 업라이트 로우', '이지바 업라이트 로우', '푸시 프레스', '리어 델토이드 플라이 머신', 
+    '레터럴 레이즈 머신', '케이블 레터럴 레이즈', '케이블 프론트 레이즈', '이지바 프론트 레이즈', 
+    '시티드 덤벨 리어 레터럴 레이즈', '숄더 탭', '시티드 바벨 숄더 프레스', '시티드 덤벨 숄더 프레스', 
+    '플레이트 숄더 프레스', 'Y 레이즈', '덤벨 Y 레이즈', '슈러그 머신', '케이블 슈러그', 
+    '케이블 인터널 로테이션', '케이블 익스터널 로테이션', '원암 케이블 레터럴 레이즈', 
+    '랜드마인 프레스', '원암 랜드마인 프레스'
+  ],
+  '팔': [
+    '바벨 컬', '이지바 컬', '덤벨 컬', '덤벨 해머 컬', '클로즈 그립 벤치프레스', 
+    '덤벨 트라이셉 익스텐션', '시티드 덤벨 트라이셉 익스텐션', '케이블 트라이셉 익스텐션', 
+    '덤벨 킥백', '바벨 리스트 컬', '이지바 리스트 컬', '덤벨 리스트 컬', '스컬 크러셔', 
+    '바벨 라잉 트라이셉 익스텐션', '케이블 푸시 다운', '덤벨 프리쳐 컬', '바벨 프리쳐 컬', 
+    '이지바 프리쳐 컬', '프리쳐 컬 머신', '암 컬 머신', '케이블 해머컬', 
+    '케이블 오버헤드 트라이셉 익스텐션', '케이블 라잉 트라이셉 익스텐션', '리버스 바벨 리스트 컬', 
+    '리버스 덤벨 리스트 컬', '인클라인 덤벨 컬', '벤치 딥스', '리스트 롤러', '리버스 바벨 컬', 
+    '트라이셉 익스텐션 머신'
+  ],
+  '복근': [
+    '싯업', '브이 업', '크런치', '힐 터치', '레그 레이즈', '행잉 레그 레이즈', 
+    '러시안 트위스트', '할로우 락', '할로우 포지션', '플랭크', '덤벨 사이드 벤드', 
+    '복근 롤아웃', '복근 에어 바이크', '토즈투 바', '행잉 니 레이즈', '복근 크런치 머신', 
+    '케이블 크런치', '필라테스 잭나이프', '리버스 크런치', '사이드 플랭크', '45도 사이드 벤드', 
+    'RKC 플랭크', '케이블 사이드 벤드', '디클라인 크런치', '중량 디클라인 크런치', 
+    '디클라인 리버스 크런치', '디클라인 싯업', '중량 디클라인 싯업', '사이드 크런치', 
+    '케이블 트위스트', '업도미널 힙 쓰러스트', '중량 업도미널 힙 쓰러스트', '토르소 로테이션 머신', 
+    '시티드 니업', '복근 코스터 머신', '플랭크 트위스트', '데드버그', '버드독', 
+    '캡틴스 체어 니 레이즈', '캣 카우 스트레치'
+  ],
+  '역도': [
+    '클린', '클린 & 저크', '저크', '스내치', '덤벨 스내치', '케틀벨 스내치', 
+    '스내치 밸런스', '중량 행잉 니 레이즈', '행 클린', '행 스내치', '클린 하이풀', '스내치 하이풀'
+  ],
+  '유산소': [
+    '트레드밀', '싸이클', '로잉 머신', '계단 오르기', '줄넘기', '이단 뛰기', 
+    '하이니 스킵', '어썰트 바이크', '스텝밀', '일립티컬 머신', '걷기', '달리기', 
+    '수영', '스키 머신'
+  ],
+  '기타': [
+    '쓰러스터', '버피', '케틀벨 스윙', '파머스 워크', '월볼 샷', '마운틴 클라이머', 
+    '박스 점프', '점핑 잭', '바 머슬업', '링 머슬업', '배틀링 로프', '덤벨 버피', 
+    '덤벨 쓰러스터', '인치웜', '스모 데드리프트 하이풀', '케틀벨 스모 하이풀', '터키쉬 겟업', 
+    '스탠드 투 스탠드 브릿지', '풀 백 브릿지', '요가', '킥복싱', '타이슨 푸시업', 
+    '원암 케틀벨 스윙', '데빌 프레스'
+  ]
 };
 
 export default function WorkoutSession() {
@@ -22,7 +122,6 @@ export default function WorkoutSession() {
 
   const [exerciseList, setExerciseList] = useState(routine.exercises);
 
-  // 세트 데이터 관리
   const [workoutData, setWorkoutData] = useState(() => {
     const initialData = {};
     routine.exercises.forEach((ex) => {
@@ -35,7 +134,26 @@ export default function WorkoutSession() {
     return initialData;
   });
 
-  // 🔍 [핵심] 과거 운동 기록에서 특정 운동의 직전 세트 정보를 찾아오는 함수
+  // ↕️ 운동 순서 위로 이동
+  const moveExerciseUp = (index) => {
+    if (index === 0) return; // 맨 첫 번째면 불가
+    const newList = [...exerciseList];
+    const temp = newList[index];
+    newList[index] = newList[index - 1];
+    newList[index - 1] = temp;
+    setExerciseList(newList);
+  };
+
+  // ↕️ 운동 순서 아래로 이동
+  const moveExerciseDown = (index) => {
+    if (index === exerciseList.length - 1) return; // 맨 마지막이면 불가
+    const newList = [...exerciseList];
+    const temp = newList[index];
+    newList[index] = newList[index + 1];
+    newList[index + 1] = temp;
+    setExerciseList(newList);
+  };
+
   const getLastWorkoutRecordForExercise = (exName) => {
     try {
       const history = JSON.parse(localStorage.getItem('lifton_workout_history') || '[]');
@@ -53,12 +171,32 @@ export default function WorkoutSession() {
     return null;
   };
 
-  // ⏱️ 휴식 타이머 상태
+  const handleLoadLastRecord = (exName) => {
+    const lastRecord = getLastWorkoutRecordForExercise(exName);
+    if (!lastRecord || !lastRecord.sets) {
+      alert('불러올 이전 기록이 없습니다!');
+      return;
+    }
+
+    const clonedSets = lastRecord.sets.map((s, idx) => ({
+      set: idx + 1,
+      weight: s.weight || '',
+      reps: s.reps || '',
+      done: false
+    }));
+
+    setWorkoutData({
+      ...workoutData,
+      [exName]: clonedSets
+    });
+
+    alert(`📌 ${exName}의 직전 기록(${lastRecord.date})을 불러왔습니다!`);
+  };
+
   const [restTimeSetting, setRestTimeSetting] = useState(60);
   const [timeLeft, setTimeLeft] = useState(0);
   const [isTimerActive, setIsTimerActive] = useState(false);
 
-  // 🔄 운동 추가/교체 모달 상태
   const [isPickerModalOpen, setIsPickerModalOpen] = useState(false);
   const [pickerMode, setPickerMode] = useState('add');
   const [targetExerciseForReplace, setTargetExerciseForReplace] = useState(null);
@@ -289,7 +427,6 @@ export default function WorkoutSession() {
       {/* 운동 종목별 세트 기록 카드 리스트 */}
       <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
         {exerciseList.map((exName, idx) => {
-          // 직전 기록 불러오기
           const lastRecord = getLastWorkoutRecordForExercise(exName);
 
           return (
@@ -303,10 +440,40 @@ export default function WorkoutSession() {
               }}
             >
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px', flexWrap: 'wrap', gap: '10px' }}>
-                <h3 style={{ fontSize: '1.3rem', color: 'var(--text)', display: 'flex', alignItems: 'center', gap: '10px', margin: 0 }}>
-                  <span style={{ color: 'var(--primary)' }}>#</span> {exName}
-                </h3>
                 
+                {/* 운동 제목과 ↕️ 순서 변경 버튼 그룹 */}
+                <div style={{ display: 'flex', alignItems: 'center', gap: '10px', flexWrap: 'wrap' }}>
+                  <h3 style={{ fontSize: '1.3rem', color: 'var(--text)', display: 'flex', alignItems: 'center', gap: '8px', margin: 0 }}>
+                    <span style={{ color: 'var(--primary)' }}>#</span> {exName}
+                  </h3>
+                  
+                  <div style={{ display: 'flex', gap: '4px' }}>
+                    <button 
+                      onClick={() => moveExerciseUp(idx)}
+                      disabled={idx === 0}
+                      style={{ 
+                        backgroundColor: '#222', border: '1px solid #333', color: idx === 0 ? '#444' : '#ccc', 
+                        padding: '4px 8px', borderRadius: '6px', fontSize: '0.75rem', cursor: idx === 0 ? 'not-allowed' : 'pointer' 
+                      }}
+                      title="위로 이동"
+                    >
+                      ▲ 위로
+                    </button>
+                    <button 
+                      onClick={() => moveExerciseDown(idx)}
+                      disabled={idx === exerciseList.length - 1}
+                      style={{ 
+                        backgroundColor: '#222', border: '1px solid #333', color: idx === exerciseList.length - 1 ? '#444' : '#ccc', 
+                        padding: '4px 8px', borderRadius: '6px', fontSize: '0.75rem', cursor: idx === exerciseList.length - 1 ? 'not-allowed' : 'pointer' 
+                      }}
+                      title="아래로 이동"
+                    >
+                      ▼ 아래로
+                    </button>
+                  </div>
+                </div>
+                
+                {/* 종목 관리 버튼들 */}
                 <div style={{ display: 'flex', gap: '8px' }}>
                   <button 
                     onClick={() => openReplaceExerciseModal(exName)}
@@ -335,19 +502,33 @@ export default function WorkoutSession() {
                 </div>
               </div>
 
-              {/* 💡 이전 기록 안내 뱃지 (직전 수행 중량/횟수를 한눈에 참고용으로 표시) */}
+              {/* 직전 기록 안내 및 불러오기 바 */}
               {lastRecord && (
                 <div style={{ 
                   backgroundColor: '#1a1a1a', border: '1px dashed #333', borderRadius: '8px', 
-                  padding: '8px 12px', marginBottom: '16px', fontSize: '0.8rem', color: 'var(--sub)',
-                  display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap'
+                  padding: '10px 14px', marginBottom: '16px', fontSize: '0.85rem', color: 'var(--sub)',
+                  display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '10px'
                 }}>
-                  <span style={{ color: 'var(--primary)', fontWeight: '700' }}>📌 직전 기록 ({lastRecord.date}):</span>
-                  {lastRecord.sets.map((s, sIdx) => (
-                    <span key={sIdx} style={{ backgroundColor: '#222', padding: '2px 6px', borderRadius: '4px', color: '#ccc' }}>
-                      {s.set}세트: {s.weight || 0}kg / {s.reps || 0}회
-                    </span>
-                  ))}
+                  <div>
+                    <span style={{ color: 'var(--primary)', fontWeight: '700', marginRight: '8px' }}>📌 직전 기록 ({lastRecord.date}):</span>
+                    {lastRecord.sets.map((s, sIdx) => (
+                      <span key={sIdx} style={{ backgroundColor: '#222', padding: '2px 6px', borderRadius: '4px', color: '#ccc', marginRight: '4px', display: 'inline-block', marginBottom: '2px' }}>
+                        {s.set}세트: {s.weight || 0}kg / {s.reps || 0}회
+                      </span>
+                    ))}
+                  </div>
+
+                  <button 
+                    type="button"
+                    onClick={() => handleLoadLastRecord(exName)}
+                    style={{
+                      backgroundColor: 'var(--primary)', color: '#fff', border: 'none',
+                      padding: '6px 12px', borderRadius: '6px', fontSize: '0.8rem', fontWeight: '700', cursor: 'pointer',
+                      whiteSpace: 'nowrap'
+                    }}
+                  >
+                    📥 이 기록 불러오기
+                  </button>
                 </div>
               )}
 
@@ -452,7 +633,7 @@ export default function WorkoutSession() {
         }}>
           <div style={{
             backgroundColor: 'var(--surface)', padding: '30px', borderRadius: '16px',
-            width: '100%', maxWidth: '550px', border: '1px solid var(--border)', boxShadow: '0 10px 25px rgba(0,0,0,0.5)',
+            width: '100%', maxWidth: '600px', border: '1px solid var(--border)', boxShadow: '0 10px 25px rgba(0,0,0,0.5)',
             maxHeight: '85vh', overflowY: 'auto'
           }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
@@ -488,7 +669,7 @@ export default function WorkoutSession() {
 
             <div style={{ 
               display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '8px', 
-              maxHeight: '260px', overflowY: 'auto', padding: '4px' 
+              maxHeight: '300px', overflowY: 'auto', padding: '4px' 
             }}>
               {EXERCISE_DATABASE[selectedCategory].map((ex, index) => (
                 <div
