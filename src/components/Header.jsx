@@ -13,27 +13,48 @@ export default function Header() {
       padding: '16px 24px', borderBottom: '1px solid var(--border)', 
       backgroundColor: 'var(--surface)', position: 'sticky', top: 0, zIndex: 100 
     }}>
-      {/* 로고 영역 (클릭 시 홈으로 이동) */}
+      {/* 🏋️‍♂️ 로고 영역: Bboggl -> LiftOn으로 변경 */}
       <div 
         onClick={() => navigate('/')} 
         style={{ fontSize: '1.5rem', fontWeight: '700', color: 'var(--primary)', cursor: 'pointer', letterSpacing: '-0.5px' }}
       >
-        Bboggl
+        LiftOn
       </div>
 
-      {/* 메뉴 영역 (src/components/Header.jsx의 nav 부분) */}
+      {/* 🧭 메뉴 영역: 홈, 나만의 루틴, 나의 식단, 커뮤니티 4가지로 세팅 */}
       <nav style={{ display: 'flex', gap: '24px', alignItems: 'center' }}>
-        {/* 💡 새로 추가된 영양제 찾기 메뉴 */}
+        
+        {/* 1. 홈 메뉴 */}
         <span 
-          onClick={() => navigate('/search')} 
+          onClick={() => navigate('/')} 
           style={{ cursor: 'pointer', fontWeight: '600', color: 'var(--text)', transition: 'color 0.2s' }}
           onMouseOver={(e) => e.target.style.color = 'var(--primary)'}
           onMouseOut={(e) => e.target.style.color = 'var(--text)'}
         >
-          영양제 찾기
+          홈
         </span>
 
-        {/* 기존 커뮤니티 버튼 */}
+        {/* 2. 나만의 루틴 메뉴 (경로는 나중에 라우터에 맞춰 /routine 등으로 변경 가능) */}
+        <span 
+          onClick={() => navigate('/routine')} 
+          style={{ cursor: 'pointer', fontWeight: '600', color: 'var(--text)', transition: 'color 0.2s' }}
+          onMouseOver={(e) => e.target.style.color = 'var(--primary)'}
+          onMouseOut={(e) => e.target.style.color = 'var(--text)'}
+        >
+          나만의 루틴
+        </span>
+
+        {/* 3. 나의 식단 메뉴 */}
+        <span 
+          onClick={() => navigate('/diet')} 
+          style={{ cursor: 'pointer', fontWeight: '600', color: 'var(--text)', transition: 'color 0.2s' }}
+          onMouseOver={(e) => e.target.style.color = 'var(--primary)'}
+          onMouseOut={(e) => e.target.style.color = 'var(--text)'}
+        >
+          나의 식단
+        </span>
+
+        {/* 4. 커뮤니티 메뉴 */}
         <span 
           onClick={() => navigate('/board')} 
           style={{ cursor: 'pointer', fontWeight: '600', color: 'var(--text)', transition: 'color 0.2s' }}
@@ -43,8 +64,7 @@ export default function Header() {
           커뮤니티
         </span>
 
-
-        {/* 로그인 상태에 따라 다른 버튼 보여주기 */}
+        {/* 로그인 상태에 따라 마이페이지 또는 로그인 버튼 보여주기 */}
         {isLoggedIn ? (
           <span 
             onClick={() => navigate('/mypage')} 
@@ -67,4 +87,3 @@ export default function Header() {
     </header>
   );
 }
-

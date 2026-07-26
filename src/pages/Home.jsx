@@ -49,7 +49,7 @@ export default function Home() {
       <main className="container" style={{ padding: '60px 20px', maxWidth: '800px' }}>
         <div style={{ textAlign: 'center', marginBottom: '40px' }}>
           <h1 style={{ fontSize: '2.5rem', marginBottom: '16px', color: 'var(--text)' }}>
-            나에게 맞는 건강 루틴,<br />Bboggl에서 찾아보세요
+            나에게 맞는 건강 루틴,<br />jichang에서 찾아보세요
           </h1>
           <p style={{ color: 'var(--sub)', fontSize: '1.1rem' }}>
             다른 사람들은 어떻게 건강을 관리하고 있을까요?

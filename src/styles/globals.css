@@ -1,18 +1,16 @@
 /* 폰트: Poppins */
 @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap');
 
-
-/* 색 조합: X · 블랙 & 블루 */
+/* 색 조합: LiftOn · 블랙 & 레드 & 오렌지 (다크모드 스포티 테마) */
 :root {
-  --primary: #1D9BF0;
-  --text: #0F1419;
-  --sub: #536471;
-  --bg: #FFFFFF;
-  --surface: #FFFFFF;
-  --border: #EFF3F4;
+  --primary: #FF4500;      /* 불타는 오렌지레드 (메인 포인트 컬러) */
+  --accent: #FF2A2A;       /* 강렬한 레드 (강조 및 호버용) */
+  --text: #FFFFFF;         /* 기본 텍스트는 밝은 화이트 */
+  --sub: #9E9E9E;          /* 서브 텍스트는 차분한 회색 */
+  --bg: #121212;           /* 시크한 다크 블랙 배경 */
+  --surface: #1E1E1E;      /* 카드나 박스 등의 표면 색상 */
+  --border: #2C2C2C;       /* 어두운 테두리선 */
 }
-
-
 
 body {
   font-family: 'Poppins', sans-serif;
@@ -23,11 +21,11 @@ body {
   box-sizing: border-box;
 }
 
-h1, h2, h3 { font-weight: 700; margin: 0; }
+h1, h2, h3 { font-weight: 700; margin: 0; color: var(--text); }
 a { text-decoration: none; color: inherit; }
 * { box-sizing: inherit; }
 
-/* 버튼 모양: 외곽선 */
+/* 버튼 모양: 외곽선 (LiftOn 오렌지레드 포인트) */
 .btn {
   border-radius: 10px;
   padding: 11px 19px;
@@ -44,7 +42,8 @@ a { text-decoration: none; color: inherit; }
 }
 .btn:hover {
   background: var(--primary);
-  color: #fff;
+  color: #121212; /* 마우스 올렸을 때 글씨를 블랙으로 대비주어 가독성 향상 */
+  border-color: var(--accent);
 }
 
 /* 아이콘: 둥근 라인 */
