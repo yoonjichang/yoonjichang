@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 
-// 🏋️‍♂️ 전신 모든 부위와 세부 종목들이 총망라된 대용량 운동 도감
 const EXERCISE_DATABASE = {
   '가슴': [
     '벤치프레스', '스미스머신 벤치프레스', '스미스머신 인클라인 벤치프레스', '덤벨 벤치프레스', 
@@ -150,6 +149,30 @@ export default function WorkoutSession() {
       console.error(e);
     }
     return null;
+  };
+
+  // ⚡ [핵심] 이전 기록의 세트 정보 그대로 불러와서 현재 세팅에 덮어씌우기
+  const handleLoadLastRecord = (exName) => {
+    const lastRecord = getLastWorkoutRecordForExercise(exName);
+    if (!lastRecord || !lastRecord.sets) {
+      alert('불러올 이전 기록이 없습니다!');
+      return;
+    }
+
+    // 직전 기록의 세트 데이터 복사 (완료 체크는 false로 초기화하여 새로 시작할 수 있게 함)
+    const clonedSets = lastRecord.sets.map((s, idx) => ({
+      set: idx + 1,
+      weight: s.weight || '',
+      reps: s.reps || '',
+      done: false
+    }));
+
+    setWorkoutData({
+      ...workoutData,
+      [exName]: clonedSets
+    });
+
+    alert(`📌 ${exName}의 직전 기록(${lastRecord.date})을 불러왔습니다!`);
   };
 
   const [restTimeSetting, setRestTimeSetting] = useState(60);
@@ -431,19 +454,34 @@ export default function WorkoutSession() {
                 </div>
               </div>
 
-              {/* 직전 기록 안내 뱃지 */}
+              {/* 📌 직전 기록 안내 뱃지 + [이전 기록 불러오기] 버튼 추가 */}
               {lastRecord && (
                 <div style={{ 
                   backgroundColor: '#1a1a1a', border: '1px dashed #333', borderRadius: '8px', 
-                  padding: '8px 12px', marginBottom: '16px', fontSize: '0.8rem', color: 'var(--sub)',
-                  display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap'
+                  padding: '10px 14px', marginBottom: '16px', fontSize: '0.85rem', color: 'var(--sub)',
+                  display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '10px'
                 }}>
-                  <span style={{ color: 'var(--primary)', fontWeight: '700' }}>📌 직전 기록 ({lastRecord.date}):</span>
-                  {lastRecord.sets.map((s, sIdx) => (
-                    <span key={sIdx} style={{ backgroundColor: '#222', padding: '2px 6px', borderRadius: '4px', color: '#ccc' }}>
-                      {s.set}세트: {s.weight || 0}kg / {s.reps || 0}회
-                    </span>
-                  ))}
+                  <div>
+                    <span style={{ color: 'var(--primary)', fontWeight: '700', marginRight: '8px' }}>📌 직전 기록 ({lastRecord.date}):</span>
+                    {lastRecord.sets.map((s, sIdx) => (
+                      <span key={sIdx} style={{ backgroundColor: '#222', padding: '2px 6px', borderRadius: '4px', color: '#ccc', marginRight: '4px', display: 'inline-block', marginBottom: '2px' }}>
+                        {s.set}세트: {s.weight || 0}kg / {s.reps || 0}회
+                      </span>
+                    ))}
+                  </div>
+
+                  {/* ⚡ 이전 기록 그대로 불러오기 버튼 */}
+                  <button 
+                    type="button"
+                    onClick={() => handleLoadLastRecord(exName)}
+                    style={{
+                      backgroundColor: 'var(--primary)', color: '#fff', border: 'none',
+                      padding: '6px 12px', borderRadius: '6px', fontSize: '0.8rem', fontWeight: '700', cursor: 'pointer',
+                      whiteSpace: 'nowrap'
+                    }}
+                  >
+                    📥 이 기록 불러오기
+                  </button>
                 </div>
               )}
 
