@@ -51,7 +51,7 @@ export default function WorkoutSession() {
   const handleAddWeight = (exerciseName, setIndex, amount) => {
     const updated = { ...workoutData };
     const currentWeight = Number(updated[exerciseName][setIndex].weight) || 0;
-    const newWeight = Math.max(0, currentWeight + amount); // 음수 방지
+    const newWeight = Math.max(0, currentWeight + amount);
     updated[exerciseName][setIndex].weight = newWeight === 0 ? '' : newWeight.toString();
     setWorkoutData(updated);
   };
@@ -85,7 +85,7 @@ export default function WorkoutSession() {
     setWorkoutData(updated);
   };
 
-  // 🗑️ 세트 삭제하기 (최소 1개는 남기도록 방어 코드 추가)
+  // 🗑️ 세트 삭제하기
   const removeSet = (exerciseName) => {
     const updated = { ...workoutData };
     const currentSets = updated[exerciseName];
@@ -93,12 +93,28 @@ export default function WorkoutSession() {
       alert('최소 1개의 세트는 유지해야 합니다!');
       return;
     }
-    currentSets.pop(); // 맨 마지막 세트 제거
+    currentSets.pop();
     setWorkoutData(updated);
   };
 
+  // 💾 [핵심] 운동 완료 버튼 누를 때 캘린더 기록용으로 저장하기
   const handleFinishWorkout = () => {
-    alert('🎉 오늘 운동을 완벽하게 끝냈습니다! 고생하셨습니다.');
+    const today = new Date().toISOString().split('T')[0]; // 오늘 날짜 (YYYY-MM-DD)
+    
+    const workoutRecord = {
+      id: Date.now(),
+      date: today,
+      title: routine.title,
+      data: workoutData // 세트, 무게, 횟수, 완료 여부 데이터 통째로 저장
+    };
+
+    // 기존 기록 불러와서 맨 앞에 추가하기
+    const existingRecords = JSON.parse(localStorage.getItem('lifton_workout_history') || '[]');
+    const updatedRecords = [workoutRecord, ...existingRecords];
+    
+    localStorage.setItem('lifton_workout_history', JSON.stringify(updatedRecords));
+
+    alert('🎉 오늘 운동 기록이 캘린더에 안전하게 저장되었습니다!');
     navigate('/routine');
   };
 
@@ -194,7 +210,6 @@ export default function WorkoutSession() {
                 <span style={{ color: 'var(--primary)' }}>#</span> {exName}
               </h3>
               
-              {/* 세트 추가 / 삭제 버튼 그룹 */}
               <div style={{ display: 'flex', gap: '8px' }}>
                 <button 
                   onClick={() => removeSet(exName)}
@@ -242,7 +257,6 @@ export default function WorkoutSession() {
                     {setItem.set}세트
                   </div>
 
-                  {/* 무게 입력 및 +5kg, +10kg 빠른 조절 버튼 */}
                   <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
                     <input 
                       type="number" 
@@ -254,7 +268,6 @@ export default function WorkoutSession() {
                         border: '1px solid #333', color: '#fff', textAlign: 'center', fontSize: '1rem', fontWeight: '600' 
                       }}
                     />
-                    {/* 빠른 무게 조절 버튼 바 */}
                     <div style={{ display: 'flex', justifyContent: 'space-between', gap: '4px' }}>
                       <button 
                         type="button" 
@@ -280,7 +293,6 @@ export default function WorkoutSession() {
                     </div>
                   </div>
 
-                  {/* 횟수 입력 */}
                   <input 
                     type="number" 
                     placeholder="0"
@@ -292,7 +304,6 @@ export default function WorkoutSession() {
                     }}
                   />
 
-                  {/* 완료 체크 버튼 */}
                   <div style={{ textAlign: 'center' }}>
                     <button 
                       onClick={() => toggleSetDone(exName, setIdx)}

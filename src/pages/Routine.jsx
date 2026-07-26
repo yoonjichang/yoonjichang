@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 
-// 🏋️‍♂️ 헬스장 필수 종목 꽉꽉 채워 넣은 대용량 운동 도감
 const EXERCISE_DATABASE = {
   '가슴': [
     '벤치프레스', '인클라인 벤치프레스', '디클라인 벤치프레스', 
@@ -41,21 +40,27 @@ const EXERCISE_DATABASE = {
 export default function Routine() {
   const navigate = useNavigate();
 
-  // 기존 루틴 리스트
   const [routines, setRoutines] = useState([
     { id: 1, title: '🔥 상체 파괴 3분할 (가슴/삼두)', exercises: ['벤치프레스', '인클라인 벤치프레스', '딥스'] },
     { id: 2, title: '🦵 하체 & 코어 찢기', exercises: ['바벨 스쿼트', '레그 프레스', '플랭크'] },
   ]);
 
-  // 모달 창 열림/닫힘 상태
   const [isModalOpen, setIsModalOpen] = useState(false);
-
-  // 새로 만드는 루틴 상태
   const [newTitle, setNewTitle] = useState('');
-  const [selectedCategory, setSelectedCategory] = useState('가슴'); // 현재 선택된 부위 탭
-  const [selectedExercises, setSelectedExercises] = useState([]); // 내가 골라담은 운동들
+  const [selectedCategory, setSelectedCategory] = useState('가슴');
+  const [selectedExercises, setSelectedExercises] = useState([]);
 
-  // 운동 종목 선택/해제 토글 함수
+  // 📅 캘린더/기록 모달 상태
+  const [isHistoryModalOpen, setIsHistoryModalOpen] = useState(false);
+  const [workoutHistory, setWorkoutHistory] = useState([]);
+
+  // 기록 보기 모달 열 때 localStorage에서 데이터 불러오기
+  const openHistoryModal = () => {
+    const savedHistory = JSON.parse(localStorage.getItem('lifton_workout_history') || '[]');
+    setWorkoutHistory(savedHistory);
+    setIsHistoryModalOpen(true);
+  };
+
   const toggleExercise = (ex) => {
     if (selectedExercises.includes(ex)) {
       setSelectedExercises(selectedExercises.filter((item) => item !== ex));
@@ -64,7 +69,6 @@ export default function Routine() {
     }
   };
 
-  // 루틴 저장 핸들러
   const handleAddRoutine = (e) => {
     e.preventDefault();
     if (!newTitle.trim()) {
@@ -90,24 +94,38 @@ export default function Routine() {
 
   return (
     <div className="container" style={{ padding: '40px 20px', maxWidth: '800px', position: 'relative' }}>
-      {/* 상단 타이틀 및 루틴 추가 버튼 */}
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '30px' }}>
+      
+      {/* 상단 타이틀 및 버튼 그룹 */}
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '30px', flexWrap: 'wrap', gap: '15px' }}>
         <div>
           <h1 style={{ fontSize: '2rem', fontWeight: '700', color: 'var(--text)', marginBottom: '8px' }}>
-            나만의 루틴
+            나만의 루틴 & 기록
           </h1>
           <p style={{ color: 'var(--sub)', margin: 0, fontSize: '0.95rem' }}>
-            광고 없는 나만의 맞춤형 운동 루틴을 관리하세요.
+            광고 없이 맞춤형 루틴을 관리하고 지난 운동 기록을 확인하세요.
           </p>
         </div>
         
-        <button 
-          className="btn"
-          style={{ background: 'var(--primary)', color: '#fff', border: 'none' }}
-          onClick={() => setIsModalOpen(true)}
-        >
-          + 루틴 추가
-        </button>
+        <div style={{ display: 'flex', gap: '10px' }}>
+          {/* 📅 과거 운동 기록 캘린더 보기 버튼 */}
+          <button 
+            onClick={openHistoryModal}
+            style={{ 
+              background: 'transparent', border: '1px solid var(--border)', color: 'var(--text)', 
+              padding: '10px 16px', borderRadius: '10px', fontWeight: '600', cursor: 'pointer', fontSize: '0.9rem' 
+            }}
+          >
+            📅 운동 기록 캘린더
+          </button>
+
+          <button 
+            className="btn"
+            style={{ background: 'var(--primary)', color: '#fff', border: 'none' }}
+            onClick={() => setIsModalOpen(true)}
+          >
+            + 루틴 추가
+          </button>
+        </div>
       </div>
 
       {/* 루틴 카드 리스트 */}
@@ -115,7 +133,6 @@ export default function Routine() {
         {routines.map((routine) => (
           <div 
             key={routine.id}
-            // 👇 [3단계 핵심] 카드를 누르면 /workout 페이지로 이동하면서 해당 루틴 데이터를 통째로 전달합니다!
             onClick={() => navigate('/workout', { state: { routine } })}
             style={{ 
               backgroundColor: 'var(--surface)', 
@@ -160,7 +177,67 @@ export default function Routine() {
         ))}
       </div>
 
-      {/* 🏋️‍♂️ 번핏 스타일 운동 선택형 모달 창 */}
+      {/* 📅 과거 운동 기록 조회 모달 창 */}
+      {isHistoryModalOpen && (
+        <div style={{
+          position: 'fixed', top: 0, left: 0, width: '100%', height: '100%',
+          backgroundColor: 'rgba(0, 0, 0, 0.8)', display: 'flex', justifyContent: 'center', alignItems: 'center', zIndex: 1000, padding: '20px'
+        }}>
+          <div style={{
+            backgroundColor: 'var(--surface)', padding: '30px', borderRadius: '16px',
+            width: '100%', maxWidth: '600px', border: '1px solid var(--border)', boxShadow: '0 10px 25px rgba(0,0,0,0.5)',
+            maxHeight: '85vh', overflowY: 'auto'
+          }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
+              <h2 style={{ fontSize: '1.5rem', color: 'var(--text)', margin: 0 }}>📅 나의 운동 기록 캘린더</h2>
+              <button 
+                onClick={() => setIsHistoryModalOpen(false)}
+                style={{ background: 'transparent', border: 'none', color: '#888', fontSize: '1.2rem', cursor: 'pointer' }}
+              >
+                ✕
+              </button>
+            </div>
+
+            {workoutHistory.length === 0 ? (
+              <div style={{ textAlign: 'center', padding: '40px 0', color: 'var(--sub)' }}>
+                <p style={{ fontSize: '1rem', marginBottom: '8px' }}>아직 저장된 운동 기록이 없습니다.</p>
+                <p style={{ fontSize: '0.85rem' }}>운동을 완료하고 기록을 남겨보세요!</p>
+              </div>
+            ) : (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+                {workoutHistory.map((record) => (
+                  <div key={record.id} style={{ backgroundColor: '#181818', border: '1px solid #2c2c2c', borderRadius: '12px', padding: '18px' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px' }}>
+                      <span style={{ backgroundColor: 'var(--primary)', color: '#fff', padding: '4px 10px', borderRadius: '6px', fontSize: '0.8rem', fontWeight: '700' }}>
+                        {record.date}
+                      </span>
+                      <h3 style={{ fontSize: '1.1rem', color: 'var(--text)', margin: 0 }}>{record.title}</h3>
+                    </div>
+
+                    {/* 기록된 운동별 세부 세트 내용 */}
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', marginTop: '12px' }}>
+                      {Object.entries(record.data || {}).map(([exName, sets]) => (
+                        <div key={exName} style={{ backgroundColor: '#121212', padding: '10px', borderRadius: '8px', border: '1px solid #222' }}>
+                          <div style={{ fontSize: '0.9rem', fontWeight: '600', color: 'var(--primary)', marginBottom: '6px' }}># {exName}</div>
+                          <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px' }}>
+                            {sets.map((s, sIdx) => (
+                              <span key={sIdx} style={{ fontSize: '0.8rem', backgroundColor: s.done ? '#1a261a' : '#222', color: s.done ? '#4caf50' : '#aaa', padding: '4px 8px', borderRadius: '4px', border: s.done ? '1px solid #2e7d32' : '1px solid #333' }}>
+                                {s.set}세트: {s.weight || 0}kg / {s.reps || 0}회 {s.done ? '✓' : ''}
+                              </span>
+                            ))}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* 새 루틴 추가 모달 창 (기존 동일) */}
       {isModalOpen && (
         <div style={{
           position: 'fixed', top: 0, left: 0, width: '100%', height: '100%',
@@ -174,7 +251,6 @@ export default function Routine() {
             <h2 style={{ fontSize: '1.5rem', marginBottom: '20px', color: 'var(--text)' }}>새 루틴 만들기</h2>
             
             <form onSubmit={handleAddRoutine} style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
-              {/* 루틴 이름 입력 */}
               <div>
                 <label style={{ display: 'block', marginBottom: '6px', fontSize: '0.9rem', color: 'var(--sub)' }}>루틴 이름</label>
                 <input 
@@ -189,7 +265,6 @@ export default function Routine() {
                 />
               </div>
 
-              {/* 내가 선택한 운동 목록 미리보기 뱃지 */}
               <div>
                 <label style={{ display: 'block', marginBottom: '6px', fontSize: '0.9rem', color: 'var(--sub)' }}>
                   선택된 운동 ({selectedExercises.length}개)
@@ -209,7 +284,7 @@ export default function Routine() {
                         {ex} 
                         <span 
                           onClick={(e) => {
-                            e.stopPropagation(); // 카드 전체 클릭 이벤트 버블링 방지
+                            e.stopPropagation();
                             toggleExercise(ex);
                           }} 
                           style={{ cursor: 'pointer', fontWeight: 'bold' }}
@@ -220,7 +295,6 @@ export default function Routine() {
                 </div>
               </div>
 
-              {/* 부위별 탭 버튼 영역 */}
               <div>
                 <label style={{ display: 'block', marginBottom: '8px', fontSize: '0.9rem', color: 'var(--sub)' }}>부위별 운동 종목 선택</label>
                 <div style={{ display: 'flex', gap: '6px', marginBottom: '12px', overflowX: 'auto', paddingBottom: '4px' }}>
@@ -242,7 +316,6 @@ export default function Routine() {
                   ))}
                 </div>
 
-                {/* 해당 부위의 운동 종목 리스트 (클릭 시 선택/해제) */}
                 <div style={{ 
                   display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '8px', 
                   maxHeight: '220px', overflowY: 'auto', padding: '4px' 
@@ -270,7 +343,6 @@ export default function Routine() {
                 </div>
               </div>
 
-              {/* 하단 취소/저장 버튼 */}
               <div style={{ display: 'flex', gap: '10px', marginTop: '10px' }}>
                 <button 
                   type="button" 
