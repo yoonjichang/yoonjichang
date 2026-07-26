@@ -7,7 +7,8 @@ import MyPage from './pages/MyPage';
 import Write from './pages/Write';
 import Board from './pages/Board';
 import PostDetail from './pages/PostDetail';
-import Search from './pages/Search'; // 👈 1. 임포트 추가
+import Search from './pages/Search';
+import Routine from './pages/Routine'; // 👈 1. Routine 페이지 임포트 추가
 
 export default function App() {
   return (
@@ -19,7 +20,8 @@ export default function App() {
         <Route path="/write" element={<Write />} />
         <Route path="/board" element={<Board />} />
         <Route path="/board/:id" element={<PostDetail />} />
-        <Route path="/search" element={<Search />} /> {/* 👈 2. 라우터 추가 */}
+        <Route path="/search" element={<Search />} />
+        <Route path="/routine" element={<Routine />} /> {/* 👈 2. /routine 라우터 추가 */}
       </Routes>
     </BrowserRouter>
   );
