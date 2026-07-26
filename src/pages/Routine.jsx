@@ -115,6 +115,8 @@ export default function Routine() {
         {routines.map((routine) => (
           <div 
             key={routine.id}
+            // 👇 [3단계 핵심] 카드를 누르면 /workout 페이지로 이동하면서 해당 루틴 데이터를 통째로 전달합니다!
+            onClick={() => navigate('/workout', { state: { routine } })}
             style={{ 
               backgroundColor: 'var(--surface)', 
               border: '1px solid var(--border)', 
@@ -206,7 +208,10 @@ export default function Routine() {
                       }}>
                         {ex} 
                         <span 
-                          onClick={() => toggleExercise(ex)} 
+                          onClick={(e) => {
+                            e.stopPropagation(); // 카드 전체 클릭 이벤트 버블링 방지
+                            toggleExercise(ex);
+                          }} 
                           style={{ cursor: 'pointer', fontWeight: 'bold' }}
                         >×</span>
                       </span>

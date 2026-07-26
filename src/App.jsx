@@ -8,7 +8,8 @@ import Write from './pages/Write';
 import Board from './pages/Board';
 import PostDetail from './pages/PostDetail';
 import Search from './pages/Search';
-import Routine from './pages/Routine'; // 👈 1. Routine 페이지 임포트 추가
+import Routine from './pages/Routine';
+import WorkoutSession from './pages/WorkoutSession'; // 👈 1. WorkoutSession 페이지 임포트 추가
 
 export default function App() {
   return (
@@ -21,7 +22,8 @@ export default function App() {
         <Route path="/board" element={<Board />} />
         <Route path="/board/:id" element={<PostDetail />} />
         <Route path="/search" element={<Search />} />
-        <Route path="/routine" element={<Routine />} /> {/* 👈 2. /routine 라우터 추가 */}
+        <Route path="/routine" element={<Routine />} />
+        <Route path="/workout" element={<WorkoutSession />} /> {/* 👈 2. /workout 라우터 경로 추가 */}
       </Routes>
     </BrowserRouter>
   );
