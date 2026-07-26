@@ -1,13 +1,41 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 
-// 🏋️‍♂️ 미리 준비된 부위별 운동 종목 데이터 (번핏 스타일)
+// 🏋️‍♂️ 헬스장 필수 종목 꽉꽉 채워 넣은 대용량 운동 도감
 const EXERCISE_DATABASE = {
-  '가슴': ['벤치프레스', '인클라인 벤치프레스', '딥스', '푸시업', '체스트 프레스', '덤벨 플라이'],
-  '등': ['데드리프트', '랫 풀다운', '바벨 로우', '시티드 로우', '턱걸이(풀업)', '원 암 덤벨 로우'],
-  '하체': ['바벨 스쿼트', '레그 프레스', '레그 컬', '레그 익스텐션', '런지', '카프 레이즈'],
-  '어깨': '오버헤드 프레스, 사이드 레터럴 레이즈, 덤벨 숄더 프레스, 페이스 풀, 프론트 레이즈'.split(', '),
-  '팔': ['바벨 컬', '덤벨 컬', '트라이셉스 푸시다운', '라잉 트라이셉스 익스텐션', '해머 컬']
+  '가슴': [
+    '벤치프레스', '인클라인 벤치프레스', '디클라인 벤치프레스', 
+    '덤벨 프레스', '인클라인 덤벨 프레스', '덤벨 플라이', 
+    '딥스', '푸시업', '체스트 프레스 머신', '펙덱 플라이'
+  ],
+  '등': [
+    '데드리프트', '랫 풀다운', '바벨 로우', '시티드 로우', 
+    '턱걸이(풀업)', '원 암 덤벨 로우', '티바 로우', 
+    '랫 풀다운(언더그립)', '케이블 풀다운', '백 익스텐션'
+  ],
+  '하체': [
+    '바벨 스쿼트', '프론트 스쿼트', '레그 프레스', '레그 컬', 
+    '레그 익스텐션', '런지', '카프 레이즈', '불가리안 스플릿 스쿼트', 
+    '아파트 핵 스쿼트', '스탠딩 레그 컬'
+  ],
+  '어깨': [
+    '오버헤드 프레스', '사이드 레터럴 레이즈', '덤벨 숄더 프레스', 
+    '페이스 풀', '프론트 레이즈', '벤트오버 레이즈', 
+    'ARNOLD 프레스', '업라이트 로우', '케이블 사이드 레터럴 레이즈'
+  ],
+  '팔': [
+    '바벨 컬', '덤벨 컬', '해머 컬', '프리처 컬', 
+    '트라이셉스 푸시다운', '라잉 트라이셉스 익스텐션', '오버헤드 덤벨 익스텐션', 
+    '케이블 오버헤드 익스텐션', '킥백'
+  ],
+  '복근/코어': [
+    '플랭크', '행잉 레그 레이즈', '크런치', '케이블 크런치', 
+    '앱휠(복근 롤아웃)', '러시안 트위스트', '레그 레이즈'
+  ],
+  '유산소': [
+    '런닝머신(인터벌)', '천국의 계단(스텝밀)', '사이클', 
+    '로잉 머신', '버피 테스트', '줄넘기'
+  ]
 };
 
 export default function Routine() {
@@ -16,7 +44,7 @@ export default function Routine() {
   // 기존 루틴 리스트
   const [routines, setRoutines] = useState([
     { id: 1, title: '🔥 상체 파괴 3분할 (가슴/삼두)', exercises: ['벤치프레스', '인클라인 벤치프레스', '딥스'] },
-    { id: 2, title: '🦵 하체 & 코어 찢기', exercises: ['바벨 스쿼트', '레그 프레스', '레그 컬'] },
+    { id: 2, title: '🦵 하체 & 코어 찢기', exercises: ['바벨 스쿼트', '레그 프레스', '플랭크'] },
   ]);
 
   // 모달 창 열림/닫힘 상태
@@ -24,7 +52,7 @@ export default function Routine() {
 
   // 새로 만드는 루틴 상태
   const [newTitle, setNewTitle] = useState('');
-  const [selectedCategory, setSelectedCategory] = useState('가슴'); // 현재 선택된 운동 부위 탭
+  const [selectedCategory, setSelectedCategory] = useState('가슴'); // 현재 선택된 부위 탭
   const [selectedExercises, setSelectedExercises] = useState([]); // 내가 골라담은 운동들
 
   // 운동 종목 선택/해제 토글 함수
@@ -69,7 +97,7 @@ export default function Routine() {
             나만의 루틴
           </h1>
           <p style={{ color: 'var(--sub)', margin: 0, fontSize: '0.95rem' }}>
-            광고 없이 운동 종목을 골라 담아 나만의 루틴을 만드세요.
+            광고 없는 나만의 맞춤형 운동 루틴을 관리하세요.
           </p>
         </div>
         
@@ -138,7 +166,7 @@ export default function Routine() {
         }}>
           <div style={{
             backgroundColor: 'var(--surface)', padding: '30px', borderRadius: '16px',
-            width: '100%', maxWidth: '550px', border: '1px solid var(--border)', boxShadow: '0 10px 25px rgba(0,0,0,0.5)',
+            width: '100%', maxWidth: '600px', border: '1px solid var(--border)', boxShadow: '0 10px 25px rgba(0,0,0,0.5)',
             maxHeight: '90vh', overflowY: 'auto'
           }}>
             <h2 style={{ fontSize: '1.5rem', marginBottom: '20px', color: 'var(--text)' }}>새 루틴 만들기</h2>
@@ -162,7 +190,7 @@ export default function Routine() {
               {/* 내가 선택한 운동 목록 미리보기 뱃지 */}
               <div>
                 <label style={{ display: 'block', marginBottom: '6px', fontSize: '0.9rem', color: 'var(--sub)' }}>
-                  선택된 운동 ({selectedExercises.length개})
+                  선택된 운동 ({selectedExercises.length}개)
                 </label>
                 <div style={{ 
                   minHeight: '45px', padding: '8px', backgroundColor: '#121212', border: '1px solid var(--border)', 
@@ -212,7 +240,7 @@ export default function Routine() {
                 {/* 해당 부위의 운동 종목 리스트 (클릭 시 선택/해제) */}
                 <div style={{ 
                   display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '8px', 
-                  maxHeight: '180px', overflowY: 'auto', padding: '4px' 
+                  maxHeight: '220px', overflowY: 'auto', padding: '4px' 
                 }}>
                   {EXERCISE_DATABASE[selectedCategory].map((ex, index) => {
                     const isSelected = selectedExercises.includes(ex);
