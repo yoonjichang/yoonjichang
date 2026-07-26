@@ -134,9 +134,37 @@ export default function WorkoutSession() {
     return initialData;
   });
 
-  // ↕️ 운동 순서 위로 이동
+  // ⏱️ 운동 시작 시간 및 소요 시간 타이머 상태
+  const [secondsElapsed, setSecondsElapsed] = useState(0);
+
+  useEffect(() => {
+    const timeTimer = setInterval(() => {
+      setSecondsElapsed((prev) => prev + 1);
+    }, 1000);
+    return () => clearInterval(timeTimer);
+  }, []);
+
+  const formatWorkoutDuration = (totalSeconds) => {
+    const mins = Math.floor(totalSeconds / 60);
+    const secs = totalSeconds % 60;
+    return `${mins}분 ${secs < 10 ? '0' : ''}${secs}초`;
+  };
+
+  // 🧮 총 볼륨(Total Volume = Σ (중량 × 횟수)) 계산 함수
+  const calculateTotalVolume = () => {
+    let total = 0;
+    Object.values(workoutData).forEach((sets) => {
+      sets.forEach((s) => {
+        const w = Number(s.weight) || 0;
+        const r = Number(s.reps) || 0;
+        total += w * r;
+      });
+    });
+    return total;
+  };
+
   const moveExerciseUp = (index) => {
-    if (index === 0) return; // 맨 첫 번째면 불가
+    if (index === 0) return;
     const newList = [...exerciseList];
     const temp = newList[index];
     newList[index] = newList[index - 1];
@@ -144,9 +172,8 @@ export default function WorkoutSession() {
     setExerciseList(newList);
   };
 
-  // ↕️ 운동 순서 아래로 이동
   const moveExerciseDown = (index) => {
-    if (index === exerciseList.length - 1) return; // 맨 마지막이면 불가
+    if (index === exerciseList.length - 1) return;
     const newList = [...exerciseList];
     const temp = newList[index];
     newList[index] = newList[index + 1];
@@ -323,11 +350,14 @@ export default function WorkoutSession() {
 
   const handleFinishWorkout = () => {
     const today = new Date().toISOString().split('T')[0];
+    const totalVol = calculateTotalVolume();
     
     const workoutRecord = {
       id: Date.now(),
       date: today,
       title: routine.title,
+      duration: formatWorkoutDuration(secondsElapsed),
+      totalVolume: totalVol,
       data: workoutData
     };
 
@@ -336,7 +366,7 @@ export default function WorkoutSession() {
     
     localStorage.setItem('lifton_workout_history', JSON.stringify(updatedRecords));
 
-    alert('🎉 오늘 운동 기록이 캘린더에 안전하게 저장되었습니다!');
+    alert(`🎉 운동 완료!\n⏱️ 총 소요 시간: ${formatWorkoutDuration(secondsElapsed)}\n💪 총 볼륨: ${totalVol.toLocaleString()} kg`);
     navigate('/routine');
   };
 
@@ -349,27 +379,33 @@ export default function WorkoutSession() {
   return (
     <div className="container" style={{ padding: '40px 20px', maxWidth: '800px', paddingBottom: '120px' }}>
       
-      {/* ⏱️ 상단 고정 휴식 타이머 바 */}
+      {/* ⏱️ 상단 고정 휴식 타이머 & 실시간 통계 바 */}
       <div style={{
         backgroundColor: 'var(--surface)', border: '1px solid var(--border)', borderRadius: '14px',
         padding: '16px 20px', marginBottom: '30px', display: 'flex', justifyContent: 'space-between', alignItems: 'center',
-        boxShadow: '0 4px 12px rgba(0,0,0,0.3)'
+        boxShadow: '0 4px 12px rgba(0,0,0,0.3)', flexWrap: 'wrap', gap: '15px'
       }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '20px', flexWrap: 'wrap' }}>
           <div>
-            <div style={{ fontSize: '0.8rem', color: 'var(--sub)', marginBottom: '2px' }}>휴식 타이머</div>
-            <div style={{ fontSize: '1.5rem', fontWeight: '700', color: isTimerActive ? 'var(--primary)' : 'var(--text)' }}>
+            <div style={{ fontSize: '0.75rem', color: 'var(--sub)', marginBottom: '2px' }}>휴식 타이머</div>
+            <div style={{ fontSize: '1.4rem', fontWeight: '700', color: isTimerActive ? 'var(--primary)' : 'var(--text)' }}>
               {isTimerActive ? formatTime(timeLeft) : (timeLeft === 0 && isTimerActive === false ? '휴식 완료!' : formatTime(restTimeSetting))}
             </div>
           </div>
-          {isTimerActive && (
-            <button 
-              onClick={() => setIsTimerActive(false)}
-              style={{ background: '#333', border: 'none', color: '#fff', padding: '6px 12px', borderRadius: '6px', fontSize: '0.8rem', cursor: 'pointer' }}
-            >
-              타이머 일시정지
-            </button>
-          )}
+
+          <div style={{ borderLeft: '1px solid #333', paddingLeft: '15px' }}>
+            <div style={{ fontSize: '0.75rem', color: 'var(--sub)', marginBottom: '2px' }}>운동 경과 시간</div>
+            <div style={{ fontSize: '1.2rem', fontWeight: '700', color: '#fff' }}>
+              {formatWorkoutDuration(secondsElapsed)}
+            </div>
+          </div>
+
+          <div style={{ borderLeft: '1px solid #333', paddingLeft: '15px' }}>
+            <div style={{ fontSize: '0.75rem', color: 'var(--sub)', marginBottom: '2px' }}>실시간 총 볼륨</div>
+            <div style={{ fontSize: '1.2rem', fontWeight: '700', color: 'var(--primary)' }}>
+              {calculateTotalVolume().toLocaleString()} kg
+            </div>
+          </div>
         </div>
 
         <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
@@ -440,8 +476,6 @@ export default function WorkoutSession() {
               }}
             >
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px', flexWrap: 'wrap', gap: '10px' }}>
-                
-                {/* 운동 제목과 ↕️ 순서 변경 버튼 그룹 */}
                 <div style={{ display: 'flex', alignItems: 'center', gap: '10px', flexWrap: 'wrap' }}>
                   <h3 style={{ fontSize: '1.3rem', color: 'var(--text)', display: 'flex', alignItems: 'center', gap: '8px', margin: 0 }}>
                     <span style={{ color: 'var(--primary)' }}>#</span> {exName}
@@ -451,29 +485,20 @@ export default function WorkoutSession() {
                     <button 
                       onClick={() => moveExerciseUp(idx)}
                       disabled={idx === 0}
-                      style={{ 
-                        backgroundColor: '#222', border: '1px solid #333', color: idx === 0 ? '#444' : '#ccc', 
-                        padding: '4px 8px', borderRadius: '6px', fontSize: '0.75rem', cursor: idx === 0 ? 'not-allowed' : 'pointer' 
-                      }}
-                      title="위로 이동"
+                      style={{ backgroundColor: '#222', border: '1px solid #333', color: idx === 0 ? '#444' : '#ccc', padding: '4px 8px', borderRadius: '6px', fontSize: '0.75rem', cursor: idx === 0 ? 'not-allowed' : 'pointer' }}
                     >
                       ▲ 위로
                     </button>
                     <button 
                       onClick={() => moveExerciseDown(idx)}
                       disabled={idx === exerciseList.length - 1}
-                      style={{ 
-                        backgroundColor: '#222', border: '1px solid #333', color: idx === exerciseList.length - 1 ? '#444' : '#ccc', 
-                        padding: '4px 8px', borderRadius: '6px', fontSize: '0.75rem', cursor: idx === exerciseList.length - 1 ? 'not-allowed' : 'pointer' 
-                      }}
-                      title="아래로 이동"
+                      style={{ backgroundColor: '#222', border: '1px solid #333', color: idx === exerciseList.length - 1 ? '#444' : '#ccc', padding: '4px 8px', borderRadius: '6px', fontSize: '0.75rem', cursor: idx === exerciseList.length - 1 ? 'not-allowed' : 'pointer' }}
                     >
                       ▼ 아래로
                     </button>
                   </div>
                 </div>
                 
-                {/* 종목 관리 버튼들 */}
                 <div style={{ display: 'flex', gap: '8px' }}>
                   <button 
                     onClick={() => openReplaceExerciseModal(exName)}
@@ -502,7 +527,6 @@ export default function WorkoutSession() {
                 </div>
               </div>
 
-              {/* 직전 기록 안내 및 불러오기 바 */}
               {lastRecord && (
                 <div style={{ 
                   backgroundColor: '#1a1a1a', border: '1px dashed #333', borderRadius: '8px', 
