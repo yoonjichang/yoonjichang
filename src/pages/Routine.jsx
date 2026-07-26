@@ -79,7 +79,7 @@ const EXERCISE_DATABASE = {
     '바벨 라잉 트라이셉 익스텐션', '케이블 푸시 다운', '덤벨 프리쳐 컬', '바벨 프리쳐 컬', 
     '이지바 프리쳐 컬', '프리쳐 컬 머신', '암 컬 머신', '케이블 해머컬', 
     '케이블 오버헤드 트라이셉 익스텐션', '케이블 라잉 트라이셉 익스텐션', '리버스 바벨 리스트 컬', 
-    '리버스 덤벨 리스트 컬', '인클라인 덤벨 컬', '벤치 딥스', '리스트 롤러', '리버스 바벨 컬', 
+    '리버스 덤벨 리스트 컬', '인클라인 덤벨 컬', '벤치 딥s', '리스트 롤러', '리버스 바벨 컬', 
     '트라이셉 익스텐션 머신'
   ],
   '복근': [
@@ -103,9 +103,9 @@ const EXERCISE_DATABASE = {
     '수영', '스키 머신'
   ],
   '기타': [
-    '쓰러스터', '버피', '케틀벨 스윙', '파머스 워크', '월볼 샷', '마운틴 클라이머', 
+    '쓰러스터', '버피', '케틀벨 SWing', '파머스 워크', '월볼 샷', '마운틴 클라이머', 
     '박스 점프', '점핑 잭', '바 머슬업', '링 머슬업', '배틀링 로프', '덤벨 버피', 
-    '덤벨 쓰러스터', '인치웜', 'ส모 데드리프트 하이풀', '케틀벨 스모 하이풀', '터키쉬 겟업', 
+    '덤벨 쓰러스터', '인치웜', '스모 데드리프트 하이풀', '케틀벨 스모 하이풀', '터키쉬 겟업', 
     '스탠드 투 스탠드 브릿지', '풀 백 브릿지', '요가', '킥복싱', '타이슨 푸시업', 
     '원암 케틀벨 스윙', '데빌 프레스'
   ]
@@ -119,9 +119,8 @@ export default function Routine() {
     { id: 2, title: '🦵 하체 & 코어 찢기', exercises: ['바벨 백스쿼트', '레그 프레스', '플랭크'] },
   ]);
 
-  // 모달 제어 상태
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [editingRoutineId, setEditingRoutineId] = useState(null); // 수정 중인 루틴 ID (null이면 생성 모드)
+  const [editingRoutineId, setEditingRoutineId] = useState(null);
   
   const [newTitle, setNewTitle] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('가슴');
@@ -129,13 +128,43 @@ export default function Routine() {
   const [searchKeyword, setSearchKeyword] = useState('');
 
   const [selectedRoutineForDetail, setSelectedRoutineForDetail] = useState(null);
+  
+  // 📅 운동 기록 캘린더 관련 상태
   const [isHistoryModalOpen, setIsHistoryModalOpen] = useState(false);
   const [workoutHistory, setWorkoutHistory] = useState([]);
+  const [editingRecord, setEditingRecord] = useState(null); // 수정 중인 운동 기록 객체
 
   const openHistoryModal = () => {
     const savedHistory = JSON.parse(localStorage.getItem('lifton_workout_history') || '[]');
     setWorkoutHistory(savedHistory);
+    setEditingRecord(null);
     setIsHistoryModalOpen(true);
+  };
+
+  // 🗑️ 과거 운동 기록 삭제 핸들러
+  const handleDeleteRecord = (id) => {
+    if (window.confirm('이 운동 기록을 정말 삭제하시겠습니까?')) {
+      const updated = workoutHistory.filter((item) => item.id !== id);
+      setWorkoutHistory(updated);
+      localStorage.setItem('lifton_workout_history', JSON.stringify(updated));
+    }
+  };
+
+  // ✏️ 과거 운동 기록 수정 저장 핸들러
+  const handleSaveEditedRecord = (e) => {
+    e.preventDefault();
+    const updatedHistory = workoutHistory.map((item) => item.id === editingRecord.id ? editingRecord : item);
+    setWorkoutHistory(updatedHistory);
+    localStorage.setItem('lifton_workout_history', JSON.stringify(updatedHistory));
+    setEditingRecord(null);
+    alert('✏️ 운동 기록이 수정되었습니다!');
+  };
+
+  // 기록 내 세트 중량/횟수 변경 핸들러
+  const handleRecordSetChange = (exName, setIdx, field, value) => {
+    const updatedData = { ...editingRecord.data };
+    updatedData[exName][setIdx][field] = value;
+    setEditingRecord({ ...editingRecord, data: updatedData });
   };
 
   const toggleExercise = (ex) => {
@@ -146,7 +175,6 @@ export default function Routine() {
     }
   };
 
-  // ➕ 루틴 생성 또는 ✏️ 수정 저장 핸들러
   const handleSaveRoutine = (e) => {
     e.preventDefault();
     if (!newTitle.trim()) {
@@ -159,11 +187,9 @@ export default function Routine() {
     }
 
     if (editingRoutineId) {
-      // 수정 모드
       setRoutines(routines.map((r) => r.id === editingRoutineId ? { ...r, title: newTitle, exercises: selectedExercises } : r));
       alert('✏️ 루틴이 성공적으로 수정되었습니다!');
     } else {
-      // 생성 모드
       const newRoutineObj = {
         id: Date.now(),
         title: newTitle,
@@ -176,9 +202,8 @@ export default function Routine() {
     closeModal();
   };
 
-  // 🗑️ 루틴 삭제 핸들러
   const handleDeleteRoutine = (e, id) => {
-    e.stopPropagation(); // 카드 클릭 이벤트 버블링 방지
+    e.stopPropagation();
     if (window.confirm('정말 이 루틴을 삭제하시겠습니까?')) {
       setRoutines(routines.filter((r) => r.id !== id));
       if (selectedRoutineForDetail?.id === id) {
@@ -187,7 +212,6 @@ export default function Routine() {
     }
   };
 
-  // ✏️ 루틴 수정 모달 열기
   const openEditModal = (e, routine) => {
     e.stopPropagation();
     setEditingRoutineId(routine.id);
@@ -196,7 +220,6 @@ export default function Routine() {
     setIsModalOpen(true);
   };
 
-  // 모달 닫기 및 상태 초기화
   const closeModal = () => {
     setIsModalOpen(false);
     setEditingRoutineId(null);
@@ -224,7 +247,7 @@ export default function Routine() {
             나만의 루틴
           </h1>
           <p style={{ color: 'var(--sub)', margin: 0, fontSize: '0.95rem' }}>
-            나만의 맞춤형 운동 루틴을 관리하고 수정·삭제하세요.
+            나만의 맞춤형 운동 루틴과 지난 운동 기록을 관리하세요.
           </p>
         </div>
         
@@ -287,7 +310,6 @@ export default function Routine() {
               </div>
             </div>
 
-            {/* 수정 및 삭제 버튼 그룹 */}
             <div style={{ display: 'flex', gap: '8px' }} onClick={(e) => e.stopPropagation()}>
               <button 
                 onClick={(e) => openEditModal(e, routine)}
@@ -306,7 +328,7 @@ export default function Routine() {
         ))}
       </div>
 
-      {/* 루틴 상세 보기 및 운동 시작 모달 */}
+      {/* 루틴 상세 보기 모달 */}
       {selectedRoutineForDetail && (
         <div style={{
           position: 'fixed', top: 0, left: 0, width: '100%', height: '100%',
@@ -363,7 +385,7 @@ export default function Routine() {
         </div>
       )}
 
-      {/* 운동 기록 캘린더 모달 */}
+      {/* 📅 운동 기록 캘린더 및 수정/삭제 모달 */}
       {isHistoryModalOpen && (
         <div style={{
           position: 'fixed', top: 0, left: 0, width: '100%', height: '100%',
@@ -371,57 +393,135 @@ export default function Routine() {
         }}>
           <div style={{
             backgroundColor: 'var(--surface)', padding: '30px', borderRadius: '16px',
-            width: '100%', maxWidth: '600px', border: '1px solid var(--border)', boxShadow: '0 10px 25px rgba(0,0,0,0.5)',
+            width: '100%', maxWidth: '650px', border: '1px solid var(--border)', boxShadow: '0 10px 25px rgba(0,0,0,0.5)',
             maxHeight: '85vh', overflowY: 'auto'
           }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
-              <h2 style={{ fontSize: '1.5rem', color: 'var(--text)', margin: 0 }}>📅 나의 운동 기록 캘린더</h2>
+              <h2 style={{ fontSize: '1.5rem', color: 'var(--text)', margin: 0 }}>
+                {editingRecord ? '✏️ 운동 기록 수정하기' : '📅 나의 운동 기록 캘린더'}
+              </h2>
               <button 
-                onClick={() => setIsHistoryModalOpen(false)}
+                onClick={() => {
+                  if (editingRecord) setEditingRecord(null);
+                  else setIsHistoryModalOpen(false);
+                }}
                 style={{ background: 'transparent', border: 'none', color: '#888', fontSize: '1.2rem', cursor: 'pointer' }}
               >
                 ✕
               </button>
             </div>
 
-            {workoutHistory.length === 0 ? (
-              <div style={{ textAlign: 'center', padding: '40px 0', color: 'var(--sub)' }}>
-                <p style={{ fontSize: '1rem', marginBottom: '8px' }}>아직 저장된 운동 기록이 없습니다.</p>
-              </div>
-            ) : (
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-                {workoutHistory.map((record) => (
-                  <div key={record.id} style={{ backgroundColor: '#181818', border: '1px solid #2c2c2c', borderRadius: '12px', padding: '18px' }}>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px' }}>
-                      <span style={{ backgroundColor: 'var(--primary)', color: '#fff', padding: '4px 10px', borderRadius: '6px', fontSize: '0.8rem', fontWeight: '700' }}>
-                        {record.date}
-                      </span>
-                      <h3 style={{ fontSize: '1.1rem', color: 'var(--text)', margin: 0 }}>{record.title}</h3>
-                    </div>
+            {/* 기록 수정 폼 */}
+            {editingRecord ? (
+              <form onSubmit={handleSaveEditedRecord} style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+                <div style={{ fontSize: '0.9rem', color: 'var(--primary)', fontWeight: '700' }}>
+                  날짜: {editingRecord.date} | 루틴명: {editingRecord.title}
+                </div>
 
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', marginTop: '12px' }}>
-                      {Object.entries(record.data || {}).map(([exName, sets]) => (
-                        <div key={exName} style={{ backgroundColor: '#121212', padding: '10px', borderRadius: '8px', border: '1px solid #222' }}>
-                          <div style={{ fontSize: '0.9rem', fontWeight: '600', color: 'var(--primary)', marginBottom: '6px' }}># {exName}</div>
-                          <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px' }}>
-                            {sets.map((s, sIdx) => (
-                              <span key={sIdx} style={{ fontSize: '0.8rem', backgroundColor: s.done ? '#1a261a' : '#222', color: s.done ? '#4caf50' : '#aaa', padding: '4px 8px', borderRadius: '4px', border: s.done ? '1px solid #2e7d32' : '1px solid #333' }}>
-                                {s.set}세트: {s.weight || 0}kg / {s.reps || 0}회 {s.done ? '✓' : ''}
-                              </span>
-                            ))}
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '16px', maxHeight: '50vh', overflowY: 'auto' }}>
+                  {Object.entries(editingRecord.data || {}).map(([exName, sets]) => (
+                    <div key={exName} style={{ backgroundColor: '#121212', padding: '14px', borderRadius: '10px', border: '1px solid #2c2c2c' }}>
+                      <div style={{ fontSize: '1rem', fontWeight: '600', color: 'var(--text)', marginBottom: '10px' }}># {exName}</div>
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                        {sets.map((s, sIdx) => (
+                          <div key={sIdx} style={{ display: 'flex', alignItems: 'center', gap: '10px', fontSize: '0.85rem', color: '#ccc' }}>
+                            <span style={{ width: '50px', fontWeight: '700' }}>{s.set}세트</span>
+                            <input 
+                              type="number"
+                              value={s.weight}
+                              onChange={(e) => handleRecordSetChange(exName, sIdx, 'weight', e.target.value)}
+                              placeholder="중량"
+                              style={{ width: '80px', padding: '6px', backgroundColor: '#222', border: '1px solid #444', color: '#fff', borderRadius: '6px', textAlign: 'center' }}
+                            /> kg / 
+                            <input 
+                              type="number"
+                              value={s.reps}
+                              onChange={(e) => handleRecordSetChange(exName, sIdx, 'reps', e.target.value)}
+                              placeholder="횟수"
+                              style={{ width: '80px', padding: '6px', backgroundColor: '#222', border: '1px solid #444', color: '#fff', borderRadius: '6px', textAlign: 'center' }}
+                            /> 회
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+
+                <div style={{ display: 'flex', gap: '10px' }}>
+                  <button 
+                    type="button"
+                    onClick={() => setEditingRecord(null)}
+                    style={{ flex: 1, padding: '10px', backgroundColor: 'transparent', border: '1px solid var(--border)', color: 'var(--sub)', borderRadius: '8px', cursor: 'pointer', fontWeight: '600' }}
+                  >
+                    취소
+                  </button>
+                  <button 
+                    type="submit"
+                    style={{ flex: 1, padding: '10px', backgroundColor: 'var(--primary)', border: 'none', color: '#fff', borderRadius: '8px', cursor: 'pointer', fontWeight: '600' }}
+                  >
+                    수정 완료
+                  </button>
+                </div>
+              </form>
+            ) : (
+              // 기록 목록 뷰
+              workoutHistory.length === 0 ? (
+                <div style={{ textAlign: 'center', padding: '40px 0', color: 'var(--sub)' }}>
+                  <p style={{ fontSize: '1rem', marginBottom: '8px' }}>아직 저장된 운동 기록이 없습니다.</p>
+                </div>
+              ) : (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+                  {workoutHistory.map((record) => (
+                    <div key={record.id} style={{ backgroundColor: '#181818', border: '1px solid #2c2c2c', borderRadius: '12px', padding: '18px' }}>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px' }}>
+                        <span style={{ backgroundColor: 'var(--primary)', color: '#fff', padding: '4px 10px', borderRadius: '6px', fontSize: '0.8rem', fontWeight: '700' }}>
+                          {record.date}
+                        </span>
+                        
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                          <h3 style={{ fontSize: '1.1rem', color: 'var(--text)', margin: 0 }}>{record.title}</h3>
+                          {/* ✏️ 수정 / 🗑️ 삭제 버튼 */}
+                          <div style={{ display: 'flex', gap: '6px' }}>
+                            <button 
+                              onClick={() => setEditingRecord(record)}
+                              style={{ backgroundColor: '#222', border: '1px solid var(--border)', color: '#ccc', padding: '4px 8px', borderRadius: '6px', fontSize: '0.75rem', cursor: 'pointer' }}
+                            >
+                              수정
+                            </button>
+                            <button 
+                              onClick={() => handleDeleteRecord(record.id)}
+                              style={{ backgroundColor: '#222', border: '1px solid #ff4d4d', color: '#ff4d4d', padding: '4px 8px', borderRadius: '6px', fontSize: '0.75rem', cursor: 'pointer' }}
+                            >
+                              삭제
+                            </button>
                           </div>
                         </div>
-                      ))}
+                      </div>
+
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', marginTop: '12px' }}>
+                        {Object.entries(record.data || {}).map(([exName, sets]) => (
+                          <div key={exName} style={{ backgroundColor: '#121212', padding: '10px', borderRadius: '8px', border: '1px solid #222' }}>
+                            <div style={{ fontSize: '0.9rem', fontWeight: '600', color: 'var(--primary)', marginBottom: '6px' }}># {exName}</div>
+                            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px' }}>
+                              {sets.map((s, sIdx) => (
+                                <span key={sIdx} style={{ fontSize: '0.8rem', backgroundColor: s.done ? '#1a261a' : '#222', color: s.done ? '#4caf50' : '#aaa', padding: '4px 8px', borderRadius: '4px', border: s.done ? '1px solid #2e7d32' : '1px solid #333' }}>
+                                  {s.set}세트: {s.weight || 0}kg / {s.reps || 0}회 {s.done ? '✓' : ''}
+                                </span>
+                              ))}
+                            </div>
+                          </div>
+                        ))}
+                      </div>
                     </div>
-                  </div>
-                ))}
-              </div>
+                  ))}
+                </div>
+              )
             )}
           </div>
         </div>
       )}
 
-      {/* 루틴 생성 / 수정 통합 모달 */}
+      {/* 새 루틴 생성 / 수정 통합 모달 */}
       {isModalOpen && (
         <div style={{
           position: 'fixed', top: 0, left: 0, width: '100%', height: '100%',
