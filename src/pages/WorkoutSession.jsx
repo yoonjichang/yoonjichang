@@ -122,19 +122,22 @@ export default function WorkoutSession() {
 
   const [exerciseList, setExerciseList] = useState(routine.exercises);
 
+  // 세트 데이터 및 노트 관리 상태
   const [workoutData, setWorkoutData] = useState(() => {
     const initialData = {};
     routine.exercises.forEach((ex) => {
-      initialData[ex] = [
-        { set: 1, weight: '', reps: '', done: false },
-        { set: 2, weight: '', reps: '', done: false },
-        { set: 3, weight: '', reps: '', done: false },
-      ];
+      initialData[ex] = {
+        sets: [
+          { set: 1, weight: '', reps: '', done: false },
+          { set: 2, weight: '', reps: '', done: false },
+          { set: 3, weight: '', reps: '', done: false },
+        ],
+        note: '' // 📝 종목별 메모
+      };
     });
     return initialData;
   });
 
-  // ⏱️ 운동 시작 시간 및 소요 시간 타이머 상태
   const [secondsElapsed, setSecondsElapsed] = useState(0);
 
   useEffect(() => {
@@ -150,15 +153,16 @@ export default function WorkoutSession() {
     return `${mins}분 ${secs < 10 ? '0' : ''}${secs}초`;
   };
 
-  // 🧮 총 볼륨(Total Volume = Σ (중량 × 횟수)) 계산 함수
   const calculateTotalVolume = () => {
     let total = 0;
-    Object.values(workoutData).forEach((sets) => {
-      sets.forEach((s) => {
-        const w = Number(s.weight) || 0;
-        const r = Number(s.reps) || 0;
-        total += w * r;
-      });
+    Object.values(workoutData).forEach((exObj) => {
+      if (exObj && exObj.sets) {
+        exObj.sets.forEach((s) => {
+          const w = Number(s.weight) || 0;
+          const r = Number(s.reps) || 0;
+          total += w * r;
+        });
+      }
     });
     return total;
   };
@@ -186,9 +190,14 @@ export default function WorkoutSession() {
       const history = JSON.parse(localStorage.getItem('lifton_workout_history') || '[]');
       for (const record of history) {
         if (record.data && record.data[exName]) {
+          const target = record.data[exName];
+          // 하위 호환성 (기존 객체 형태 또는 새 배열 형태 대응)
+          const setsArr = Array.isArray(target) ? target : target.sets;
+          const noteStr = Array.isArray(target) ? '' : (target.note || '');
           return {
             date: record.date,
-            sets: record.data[exName]
+            sets: setsArr,
+            note: noteStr
           };
         }
       }
@@ -214,7 +223,10 @@ export default function WorkoutSession() {
 
     setWorkoutData({
       ...workoutData,
-      [exName]: clonedSets
+      [exName]: {
+        sets: clonedSets,
+        note: lastRecord.note || ''
+      }
     });
 
     alert(`📌 ${exName}의 직전 기록(${lastRecord.date})을 불러왔습니다!`);
@@ -243,21 +255,28 @@ export default function WorkoutSession() {
 
   const handleInputChange = (exerciseName, setIndex, field, value) => {
     const updated = { ...workoutData };
-    updated[exerciseName][setIndex][field] = value;
+    updated[exerciseName].sets[setIndex][field] = value;
+    setWorkoutData(updated);
+  };
+
+  // 📝 메모 변경 핸들러
+  const handleNoteChange = (exerciseName, value) => {
+    const updated = { ...workoutData };
+    updated[exerciseName].note = value;
     setWorkoutData(updated);
   };
 
   const handleAddWeight = (exerciseName, setIndex, amount) => {
     const updated = { ...workoutData };
-    const currentWeight = Number(updated[exerciseName][setIndex].weight) || 0;
+    const currentWeight = Number(updated[exerciseName].sets[setIndex].weight) || 0;
     const newWeight = Math.max(0, currentWeight + amount);
-    updated[exerciseName][setIndex].weight = newWeight === 0 ? '' : newWeight.toString();
+    updated[exerciseName].sets[setIndex].weight = newWeight === 0 ? '' : newWeight.toString();
     setWorkoutData(updated);
   };
 
   const toggleSetDone = (exerciseName, setIndex) => {
     const updated = { ...workoutData };
-    const targetSet = updated[exerciseName][setIndex];
+    const targetSet = updated[exerciseName].sets[setIndex];
     targetSet.done = !targetSet.done;
     setWorkoutData(updated);
 
@@ -269,7 +288,7 @@ export default function WorkoutSession() {
 
   const addSet = (exerciseName) => {
     const updated = { ...workoutData };
-    const currentSets = updated[exerciseName];
+    const currentSets = updated[exerciseName].sets;
     const newSetNumber = currentSets.length + 1;
     const lastSet = currentSets[currentSets.length - 1] || { weight: '', reps: '' };
     
@@ -284,7 +303,7 @@ export default function WorkoutSession() {
 
   const removeSet = (exerciseName) => {
     const updated = { ...workoutData };
-    const currentSets = updated[exerciseName];
+    const currentSets = updated[exerciseName].sets;
     if (currentSets.length <= 1) {
       alert('최소 1개의 세트는 유지해야 합니다!');
       return;
@@ -325,22 +344,28 @@ export default function WorkoutSession() {
       setExerciseList([...exerciseList, selectedEx]);
       setWorkoutData({
         ...workoutData,
-        [selectedEx]: [
-          { set: 1, weight: '', reps: '', done: false },
-          { set: 2, weight: '', reps: '', done: false },
-          { set: 3, weight: '', reps: '', done: false },
-        ]
+        [selectedEx]: {
+          sets: [
+            { set: 1, weight: '', reps: '', done: false },
+            { set: 2, weight: '', reps: '', done: false },
+            { set: 3, weight: '', reps: '', done: false },
+          ],
+          note: ''
+        }
       });
     } else if (pickerMode === 'replace' && targetExerciseForReplace) {
       const newList = exerciseList.map((ex) => (ex === targetExerciseForReplace ? selectedEx : ex));
       setExerciseList(newList);
 
       const updatedData = { ...workoutData };
-      updatedData[selectedEx] = updatedData[targetExerciseForReplace] || [
-        { set: 1, weight: '', reps: '', done: false },
-        { set: 2, weight: '', reps: '', done: false },
-        { set: 3, weight: '', reps: '', done: false },
-      ];
+      updatedData[selectedEx] = updatedData[targetExerciseForReplace] || {
+        sets: [
+          { set: 1, weight: '', reps: '', done: false },
+          { set: 2, weight: '', reps: '', done: false },
+          { set: 3, weight: '', reps: '', done: false },
+        ],
+        note: ''
+      };
       delete updatedData[targetExerciseForReplace];
       setWorkoutData(updatedData);
     }
@@ -358,7 +383,7 @@ export default function WorkoutSession() {
       title: routine.title,
       duration: formatWorkoutDuration(secondsElapsed),
       totalVolume: totalVol,
-      data: workoutData
+      data: workoutData // 세트 정보 및 메모가 포함된 구조체 저장
     };
 
     const existingRecords = JSON.parse(localStorage.getItem('lifton_workout_history') || '[]');
@@ -464,6 +489,7 @@ export default function WorkoutSession() {
       <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
         {exerciseList.map((exName, idx) => {
           const lastRecord = getLastWorkoutRecordForExercise(exName);
+          const currentExData = workoutData[exName] || { sets: [], note: '' };
 
           return (
             <div 
@@ -530,7 +556,7 @@ export default function WorkoutSession() {
               {lastRecord && (
                 <div style={{ 
                   backgroundColor: '#1a1a1a', border: '1px dashed #333', borderRadius: '8px', 
-                  padding: '10px 14px', marginBottom: '16px', fontSize: '0.85rem', color: 'var(--sub)',
+                  padding: '10px 14px', marginBottom: '14px', fontSize: '0.85rem', color: 'var(--sub)',
                   display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '10px'
                 }}>
                   <div>
@@ -540,6 +566,11 @@ export default function WorkoutSession() {
                         {s.set}세트: {s.weight || 0}kg / {s.reps || 0}회
                       </span>
                     ))}
+                    {lastRecord.note && (
+                      <div style={{ fontSize: '0.8rem', color: '#aaa', fontStyle: 'italic', marginTop: '4px' }}>
+                        메모: "{lastRecord.note}"
+                      </div>
+                    )}
                   </div>
 
                   <button 
@@ -556,6 +587,20 @@ export default function WorkoutSession() {
                 </div>
               )}
 
+              {/* 📝 운동별 메모 입력창 */}
+              <div style={{ marginBottom: '16px' }}>
+                <input 
+                  type="text"
+                  placeholder="📝 오늘 이 운동에 대한 메모를 남겨보세요 (예: 그립 넓게, 자극 좋음)"
+                  value={currentExData.note}
+                  onChange={(e) => handleNoteChange(exName, e.target.value)}
+                  style={{
+                    width: '100%', padding: '8px 12px', borderRadius: '6px', backgroundColor: '#181818',
+                    border: '1px solid #333', color: '#ddd', fontSize: '0.85rem'
+                  }}
+                />
+              </div>
+
               <div style={{ 
                 display: 'grid', gridTemplateColumns: '60px 1.4fr 1fr 80px', gap: '10px', 
                 marginBottom: '10px', fontSize: '0.85rem', color: 'var(--sub)', fontWeight: '600', textAlign: 'center' 
@@ -567,7 +612,7 @@ export default function WorkoutSession() {
               </div>
 
               <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-                {workoutData[exName]?.map((setItem, setIdx) => (
+                {currentExData.sets?.map((setItem, setIdx) => (
                   <div 
                     key={setIdx}
                     style={{ 
