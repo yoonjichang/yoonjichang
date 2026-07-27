@@ -4,52 +4,47 @@ import Routine from './pages/Routine';
 import WorkoutSession from './pages/WorkoutSession';
 
 export default function App() {
-  // 🌙/☀️ 로컬스토리지에서 테마를 불러오거나 기본값 'dark' 설정
   const [theme, setTheme] = useState(() => {
     return localStorage.getItem('lifton_theme') || 'dark';
   });
 
-  // 테마가 바뀔 때마다 HTML 최상단 속성(data-theme)과 로컬스토리지 업데이트
   useEffect(() => {
     document.documentElement.setAttribute('data-theme', theme);
     localStorage.setItem('lifton_theme', theme);
   }, [theme]);
 
-  // 테마 전환 토글 함수
   const toggleTheme = () => {
     setTheme((prev) => (prev === 'dark' ? 'light' : 'dark'));
   };
 
   return (
     <BrowserRouter>
-      {/* ☀️/🌙 화면 우측 하단 플로팅 테마 변경 버튼 */}
+      {/* 🚀 CSS 변수 없이 강제로 색상을 넣은 플로팅 버튼 (절대 투명해질 수 없음) */}
       <button
         onClick={toggleTheme}
         style={{
           position: 'fixed', 
-          bottom: '20px', 
-          right: '20px', 
-          zIndex: 9999,
-          width: '56px', 
-          height: '56px', 
-          borderRadius: '28px',
-          backgroundColor: 'var(--surface)', 
-          color: 'var(--text)',
-          border: '1px solid var(--border)', 
-          boxShadow: '0 4px 12px rgba(0,0,0,0.2)',
-          fontSize: '1.8rem', 
+          bottom: '30px', 
+          right: '30px', 
+          zIndex: 99999, // 어떤 요소보다도 무조건 맨 위에 오도록 설정
+          width: '60px', 
+          height: '60px', 
+          borderRadius: '30px',
+          backgroundColor: '#ff5722', /* 강제 주황색 배경 */
+          color: '#ffffff', /* 강제 흰색 아이콘 */
+          border: '2px solid #ffffff', 
+          boxShadow: '0 5px 15px rgba(0,0,0,0.5)',
+          fontSize: '2rem', 
           cursor: 'pointer', 
           display: 'flex', 
           justifyContent: 'center', 
           alignItems: 'center',
-          transition: 'background-color 0.3s, color 0.3s'
         }}
         title="테마 변경"
       >
         {theme === 'dark' ? '☀️' : '🌙'}
       </button>
 
-      {/* 라우터 설정 */}
       <Routes>
         <Route path="/" element={<Routine />} />
         <Route path="/routine" element={<Routine />} />
