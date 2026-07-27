@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { BrowserRouter, Routes, Route } from 'react-router-dom';
+import { HashRouter, Routes, Route } from 'react-router-dom';
 import Routine from './pages/Routine';
 import WorkoutSession from './pages/WorkoutSession';
 
@@ -18,20 +18,20 @@ export default function App() {
   };
 
   return (
-    <BrowserRouter>
-      {/* 🚀 CSS 변수 없이 강제로 색상을 넣은 플로팅 버튼 (절대 투명해질 수 없음) */}
+    <HashRouter>
+      {/* ☀️/🌙 우측 하단 테마 토글 버튼 */}
       <button
         onClick={toggleTheme}
         style={{
           position: 'fixed', 
           bottom: '30px', 
           right: '30px', 
-          zIndex: 99999, // 어떤 요소보다도 무조건 맨 위에 오도록 설정
+          zIndex: 99999, 
           width: '60px', 
           height: '60px', 
           borderRadius: '30px',
-          backgroundColor: '#ff5722', /* 강제 주황색 배경 */
-          color: '#ffffff', /* 강제 흰색 아이콘 */
+          backgroundColor: '#ff5722', 
+          color: '#ffffff', 
           border: '2px solid #ffffff', 
           boxShadow: '0 5px 15px rgba(0,0,0,0.5)',
           fontSize: '2rem', 
@@ -50,6 +50,6 @@ export default function App() {
         <Route path="/routine" element={<Routine />} />
         <Route path="/workout" element={<WorkoutSession />} />
       </Routes>
-    </BrowserRouter>
+    </HashRouter>
   );
 }
