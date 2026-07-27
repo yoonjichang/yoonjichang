@@ -79,7 +79,7 @@ const EXERCISE_DATABASE = {
     '바벨 라잉 트라이셉 익스텐션', '케이블 푸시 다운', '덤벨 프리쳐 컬', '바벨 프리쳐 컬', 
     '이지바 프리쳐 컬', '프리쳐 컬 머신', '암 컬 머신', '케이블 해머컬', 
     '케이블 오버헤드 트라이셉 익스텐션', '케이블 라잉 트라이셉 익스텐션', '리버스 바벨 리스트 컬', 
-    '리버스 덤벨 리스트 컬', '인클라인 덤벨 컬', '벤치 딥s', '리스트 롤러', '리버스 바벨 컬', 
+    '리버스 덤벨 리스트 컬', '인클라인 덤벨 컬', '벤치 딥스', '리스트 롤러', '리버스 바벨 컬', 
     '트라이셉 익스텐션 머신'
   ],
   '복근': [
@@ -103,7 +103,7 @@ const EXERCISE_DATABASE = {
     '수영', '스키 머신'
   ],
   '기타': [
-    '쓰러스터', '버피', '케틀벨 SWing', '파머스 워크', '월볼 샷', '마운틴 클라이머', 
+    '쓰러스터', '버피', '케틀벨 스윙', '파머스 워크', '월볼 샷', '마운틴 클라이머', 
     '박스 점프', '점핑 잭', '바 머슬업', '링 머슬업', '배틀링 로프', '덤벨 버피', 
     '덤벨 쓰러스터', '인치웜', '스모 데드리프트 하이풀', '케틀벨 스모 하이풀', '터키쉬 겟업', 
     '스탠드 투 스탠드 브릿지', '풀 백 브릿지', '요가', '킥복싱', '타이슨 푸시업', 
@@ -129,10 +129,9 @@ export default function Routine() {
 
   const [selectedRoutineForDetail, setSelectedRoutineForDetail] = useState(null);
   
-  // 📅 운동 기록 캘린더 관련 상태
   const [isHistoryModalOpen, setIsHistoryModalOpen] = useState(false);
   const [workoutHistory, setWorkoutHistory] = useState([]);
-  const [editingRecord, setEditingRecord] = useState(null); // 수정 중인 운동 기록 객체
+  const [editingRecord, setEditingRecord] = useState(null);
 
   const openHistoryModal = () => {
     const savedHistory = JSON.parse(localStorage.getItem('lifton_workout_history') || '[]');
@@ -141,7 +140,6 @@ export default function Routine() {
     setIsHistoryModalOpen(true);
   };
 
-  // 🗑️ 과거 운동 기록 삭제 핸들러
   const handleDeleteRecord = (id) => {
     if (window.confirm('이 운동 기록을 정말 삭제하시겠습니까?')) {
       const updated = workoutHistory.filter((item) => item.id !== id);
@@ -150,7 +148,6 @@ export default function Routine() {
     }
   };
 
-  // ✏️ 과거 운동 기록 수정 저장 핸들러
   const handleSaveEditedRecord = (e) => {
     e.preventDefault();
     const updatedHistory = workoutHistory.map((item) => item.id === editingRecord.id ? editingRecord : item);
@@ -160,10 +157,9 @@ export default function Routine() {
     alert('✏️ 운동 기록이 수정되었습니다!');
   };
 
-  // 기록 내 세트 중량/횟수 변경 핸들러
   const handleRecordSetChange = (exName, setIdx, field, value) => {
     const updatedData = { ...editingRecord.data };
-    updatedData[exName][setIdx][field] = value;
+    updatedData[exName].sets[setIdx][field] = value;
     setEditingRecord({ ...editingRecord, data: updatedData });
   };
 
@@ -254,17 +250,14 @@ export default function Routine() {
         <div style={{ display: 'flex', gap: '10px' }}>
           <button 
             onClick={openHistoryModal}
-            style={{ 
-              background: 'transparent', border: '1px solid var(--border)', color: 'var(--text)', 
-              padding: '10px 16px', borderRadius: '10px', fontWeight: '600', cursor: 'pointer', fontSize: '0.9rem' 
-            }}
+            style={{ background: 'transparent', border: '1px solid var(--border)', color: 'var(--text)', padding: '10px 16px', borderRadius: '10px', fontWeight: '600', cursor: 'pointer', fontSize: '0.9rem' }}
           >
             📅 운동 기록 캘린더
           </button>
 
           <button 
             className="btn"
-            style={{ background: 'var(--primary)', color: '#fff', border: 'none' }}
+            style={{ background: 'var(--primary)', color: '#fff', border: 'none', padding: '10px 16px', borderRadius: '10px', fontWeight: '600', cursor: 'pointer' }}
             onClick={() => {
               setEditingRoutineId(null);
               setNewTitle('');
@@ -284,42 +277,27 @@ export default function Routine() {
             key={routine.id}
             onClick={() => setSelectedRoutineForDetail(routine)}
             style={{ 
-              backgroundColor: 'var(--surface)', 
-              border: '1px solid var(--border)', 
-              borderRadius: '14px', 
-              padding: '24px',
-              transition: 'transform 0.2s, border-color 0.2s',
-              cursor: 'pointer',
-              display: 'flex',
-              justifyContent: 'space-between',
-              alignItems: 'center'
+              backgroundColor: 'var(--surface)', border: '1px solid var(--border)', borderRadius: '14px', padding: '24px',
+              transition: 'transform 0.2s, border-color 0.2s', cursor: 'pointer', display: 'flex', justifyContent: 'space-between', alignItems: 'center'
             }}
-            onMouseOver={(e) => {
-              e.currentTarget.style.borderColor = 'var(--primary)';
-              e.currentTarget.style.transform = 'translateY(-2px)';
-            }}
-            onMouseOut={(e) => {
-              e.currentTarget.style.borderColor = 'var(--border)';
-              e.currentTarget.style.transform = 'translateY(0)';
-            }}
+            onMouseOver={(e) => { e.currentTarget.style.borderColor = 'var(--primary)'; e.currentTarget.style.transform = 'translateY(-2px)'; }}
+            onMouseOut={(e) => { e.currentTarget.style.borderColor = 'var(--border)'; e.currentTarget.style.transform = 'translateY(0)'; }}
           >
             <div>
               <h3 style={{ fontSize: '1.25rem', color: 'var(--text)', margin: '0 0 6px 0' }}>{routine.title}</h3>
-              <div style={{ fontSize: '0.85rem', color: 'var(--sub)' }}>
-                포함된 운동: {routine.exercises.length}개 종목
-              </div>
+              <div style={{ fontSize: '0.85rem', color: 'var(--sub)' }}>포함된 운동: {routine.exercises.length}개 종목</div>
             </div>
 
             <div style={{ display: 'flex', gap: '8px' }} onClick={(e) => e.stopPropagation()}>
               <button 
                 onClick={(e) => openEditModal(e, routine)}
-                style={{ backgroundColor: '#222', border: '1px solid var(--border)', color: '#ccc', padding: '6px 12px', borderRadius: '8px', fontSize: '0.85rem', cursor: 'pointer' }}
+                style={{ backgroundColor: 'var(--btn-bg)', border: '1px solid var(--border)', color: 'var(--text)', padding: '6px 12px', borderRadius: '8px', fontSize: '0.85rem', cursor: 'pointer' }}
               >
                 수정
               </button>
               <button 
                 onClick={(e) => handleDeleteRoutine(e, routine.id)}
-                style={{ backgroundColor: '#222', border: '1px solid #ff4d4d', color: '#ff4d4d', padding: '6px 12px', borderRadius: '8px', fontSize: '0.85rem', cursor: 'pointer' }}
+                style={{ backgroundColor: 'var(--btn-bg)', border: '1px solid #ff4d4d', color: '#ff4d4d', padding: '6px 12px', borderRadius: '8px', fontSize: '0.85rem', cursor: 'pointer' }}
               >
                 삭제
               </button>
@@ -332,29 +310,22 @@ export default function Routine() {
       {selectedRoutineForDetail && (
         <div style={{
           position: 'fixed', top: 0, left: 0, width: '100%', height: '100%',
-          backgroundColor: 'rgba(0, 0, 0, 0.8)', display: 'flex', justifyContent: 'center', alignItems: 'center', zIndex: 1000, padding: '20px'
+          backgroundColor: 'var(--modal-overlay)', display: 'flex', justifyContent: 'center', alignItems: 'center', zIndex: 1000, padding: '20px'
         }}>
           <div style={{
             backgroundColor: 'var(--surface)', padding: '30px', borderRadius: '16px',
-            width: '100%', maxWidth: '500px', border: '1px solid var(--border)', boxShadow: '0 10px 25px rgba(0,0,0,0.5)',
-            maxHeight: '85vh', overflowY: 'auto'
+            width: '100%', maxWidth: '500px', border: '1px solid var(--border)', boxShadow: '0 10px 25px rgba(0,0,0,0.5)', maxHeight: '85vh', overflowY: 'auto'
           }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '15px' }}>
               <h2 style={{ fontSize: '1.4rem', color: 'var(--text)', margin: 0 }}>{selectedRoutineForDetail.title}</h2>
-              <button 
-                onClick={() => setSelectedRoutineForDetail(null)}
-                style={{ background: 'transparent', border: 'none', color: '#888', fontSize: '1.2rem', cursor: 'pointer' }}
-              >
-                ✕
-              </button>
+              <button onClick={() => setSelectedRoutineForDetail(null)} style={{ background: 'transparent', border: 'none', color: 'var(--sub)', fontSize: '1.2rem', cursor: 'pointer' }}>✕</button>
             </div>
 
             <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', marginBottom: '30px' }}>
               {selectedRoutineForDetail.exercises.map((ex, idx) => (
                 <div key={idx} style={{ 
-                  backgroundColor: '#181818', border: '1px solid #2c2c2c', padding: '12px 16px', 
-                  borderRadius: '10px', color: '#fff', fontSize: '0.95rem', fontWeight: '600',
-                  display: 'flex', alignItems: 'center', gap: '10px'
+                  backgroundColor: 'var(--input-bg)', border: '1px solid var(--border)', padding: '12px 16px', 
+                  borderRadius: '10px', color: 'var(--text)', fontSize: '0.95rem', fontWeight: '600', display: 'flex', alignItems: 'center', gap: '10px'
                 }}>
                   <span style={{ color: 'var(--primary)' }}>#</span> {ex}
                 </div>
@@ -364,19 +335,13 @@ export default function Routine() {
             <div style={{ display: 'flex', gap: '10px' }}>
               <button 
                 onClick={() => setSelectedRoutineForDetail(null)}
-                style={{
-                  flex: 1, padding: '12px', borderRadius: '8px', backgroundColor: 'transparent',
-                  border: '1px solid var(--border)', color: 'var(--sub)', fontWeight: '600', cursor: 'pointer'
-                }}
+                style={{ flex: 1, padding: '12px', borderRadius: '8px', backgroundColor: 'transparent', border: '1px solid var(--border)', color: 'var(--sub)', fontWeight: '600', cursor: 'pointer' }}
               >
                 닫기
               </button>
               <button 
                 onClick={() => navigate('/workout', { state: { routine: selectedRoutineForDetail } })}
-                style={{
-                  flex: 1.5, padding: '12px', borderRadius: '8px', backgroundColor: 'var(--primary)',
-                  border: 'none', color: '#fff', fontWeight: '700', cursor: 'pointer'
-                }}
+                style={{ flex: 1.5, padding: '12px', borderRadius: '8px', backgroundColor: 'var(--primary)', border: 'none', color: '#fff', fontWeight: '700', cursor: 'pointer' }}
               >
                 운동 시작하기 🚀
               </button>
@@ -389,23 +354,19 @@ export default function Routine() {
       {isHistoryModalOpen && (
         <div style={{
           position: 'fixed', top: 0, left: 0, width: '100%', height: '100%',
-          backgroundColor: 'rgba(0, 0, 0, 0.8)', display: 'flex', justifyContent: 'center', alignItems: 'center', zIndex: 1000, padding: '20px'
+          backgroundColor: 'var(--modal-overlay)', display: 'flex', justifyContent: 'center', alignItems: 'center', zIndex: 1000, padding: '20px'
         }}>
           <div style={{
             backgroundColor: 'var(--surface)', padding: '30px', borderRadius: '16px',
-            width: '100%', maxWidth: '650px', border: '1px solid var(--border)', boxShadow: '0 10px 25px rgba(0,0,0,0.5)',
-            maxHeight: '85vh', overflowY: 'auto'
+            width: '100%', maxWidth: '650px', border: '1px solid var(--border)', boxShadow: '0 10px 25px rgba(0,0,0,0.5)', maxHeight: '85vh', overflowY: 'auto'
           }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
               <h2 style={{ fontSize: '1.5rem', color: 'var(--text)', margin: 0 }}>
                 {editingRecord ? '✏️ 운동 기록 수정하기' : '📅 나의 운동 기록 캘린더'}
               </h2>
               <button 
-                onClick={() => {
-                  if (editingRecord) setEditingRecord(null);
-                  else setIsHistoryModalOpen(false);
-                }}
-                style={{ background: 'transparent', border: 'none', color: '#888', fontSize: '1.2rem', cursor: 'pointer' }}
+                onClick={() => { if (editingRecord) setEditingRecord(null); else setIsHistoryModalOpen(false); }}
+                style={{ background: 'transparent', border: 'none', color: 'var(--sub)', fontSize: '1.2rem', cursor: 'pointer' }}
               >
                 ✕
               </button>
@@ -419,52 +380,41 @@ export default function Routine() {
                 </div>
 
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '16px', maxHeight: '50vh', overflowY: 'auto' }}>
-                  {Object.entries(editingRecord.data || {}).map(([exName, sets]) => (
-                    <div key={exName} style={{ backgroundColor: '#121212', padding: '14px', borderRadius: '10px', border: '1px solid #2c2c2c' }}>
-                      <div style={{ fontSize: '1rem', fontWeight: '600', color: 'var(--text)', marginBottom: '10px' }}># {exName}</div>
-                      <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                        {sets.map((s, sIdx) => (
-                          <div key={sIdx} style={{ display: 'flex', alignItems: 'center', gap: '10px', fontSize: '0.85rem', color: '#ccc' }}>
-                            <span style={{ width: '50px', fontWeight: '700' }}>{s.set}세트</span>
-                            <input 
-                              type="number"
-                              value={s.weight}
-                              onChange={(e) => handleRecordSetChange(exName, sIdx, 'weight', e.target.value)}
-                              placeholder="중량"
-                              style={{ width: '80px', padding: '6px', backgroundColor: '#222', border: '1px solid #444', color: '#fff', borderRadius: '6px', textAlign: 'center' }}
-                            /> kg / 
-                            <input 
-                              type="number"
-                              value={s.reps}
-                              onChange={(e) => handleRecordSetChange(exName, sIdx, 'reps', e.target.value)}
-                              placeholder="횟수"
-                              style={{ width: '80px', padding: '6px', backgroundColor: '#222', border: '1px solid #444', color: '#fff', borderRadius: '6px', textAlign: 'center' }}
-                            /> 회
-                          </div>
-                        ))}
+                  {Object.entries(editingRecord.data || {}).map(([exName, exObj]) => {
+                    const sets = Array.isArray(exObj) ? exObj : exObj.sets;
+                    return (
+                      <div key={exName} style={{ backgroundColor: 'var(--input-bg)', padding: '14px', borderRadius: '10px', border: '1px solid var(--border)' }}>
+                        <div style={{ fontSize: '1rem', fontWeight: '600', color: 'var(--text)', marginBottom: '10px' }}># {exName}</div>
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                          {sets.map((s, sIdx) => (
+                            <div key={sIdx} style={{ display: 'flex', alignItems: 'center', gap: '10px', fontSize: '0.85rem', color: 'var(--text)' }}>
+                              <span style={{ width: '50px', fontWeight: '700' }}>{s.set}세트</span>
+                              <input 
+                                type="number" value={s.weight}
+                                onChange={(e) => handleRecordSetChange(exName, sIdx, 'weight', e.target.value)}
+                                placeholder="중량"
+                                style={{ width: '80px', padding: '6px', backgroundColor: 'var(--btn-bg)', border: '1px solid var(--border)', color: 'var(--text)', borderRadius: '6px', textAlign: 'center' }}
+                              /> kg / 
+                              <input 
+                                type="number" value={s.reps}
+                                onChange={(e) => handleRecordSetChange(exName, sIdx, 'reps', e.target.value)}
+                                placeholder="횟수"
+                                style={{ width: '80px', padding: '6px', backgroundColor: 'var(--btn-bg)', border: '1px solid var(--border)', color: 'var(--text)', borderRadius: '6px', textAlign: 'center' }}
+                              /> 회
+                            </div>
+                          ))}
+                        </div>
                       </div>
-                    </div>
-                  ))}
+                    );
+                  })}
                 </div>
 
                 <div style={{ display: 'flex', gap: '10px' }}>
-                  <button 
-                    type="button"
-                    onClick={() => setEditingRecord(null)}
-                    style={{ flex: 1, padding: '10px', backgroundColor: 'transparent', border: '1px solid var(--border)', color: 'var(--sub)', borderRadius: '8px', cursor: 'pointer', fontWeight: '600' }}
-                  >
-                    취소
-                  </button>
-                  <button 
-                    type="submit"
-                    style={{ flex: 1, padding: '10px', backgroundColor: 'var(--primary)', border: 'none', color: '#fff', borderRadius: '8px', cursor: 'pointer', fontWeight: '600' }}
-                  >
-                    수정 완료
-                  </button>
+                  <button type="button" onClick={() => setEditingRecord(null)} style={{ flex: 1, padding: '10px', backgroundColor: 'transparent', border: '1px solid var(--border)', color: 'var(--sub)', borderRadius: '8px', cursor: 'pointer', fontWeight: '600' }}>취소</button>
+                  <button type="submit" style={{ flex: 1, padding: '10px', backgroundColor: 'var(--primary)', border: 'none', color: '#fff', borderRadius: '8px', cursor: 'pointer', fontWeight: '600' }}>수정 완료</button>
                 </div>
               </form>
             ) : (
-              // 기록 목록 뷰
               workoutHistory.length === 0 ? (
                 <div style={{ textAlign: 'center', padding: '40px 0', color: 'var(--sub)' }}>
                   <p style={{ fontSize: '1rem', marginBottom: '8px' }}>아직 저장된 운동 기록이 없습니다.</p>
@@ -472,7 +422,7 @@ export default function Routine() {
               ) : (
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
                   {workoutHistory.map((record) => (
-                    <div key={record.id} style={{ backgroundColor: '#181818', border: '1px solid #2c2c2c', borderRadius: '12px', padding: '18px' }}>
+                    <div key={record.id} style={{ backgroundColor: 'var(--surface)', border: '1px solid var(--border)', borderRadius: '12px', padding: '18px' }}>
                       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px' }}>
                         <span style={{ backgroundColor: 'var(--primary)', color: '#fff', padding: '4px 10px', borderRadius: '6px', fontSize: '0.8rem', fontWeight: '700' }}>
                           {record.date}
@@ -480,37 +430,31 @@ export default function Routine() {
                         
                         <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
                           <h3 style={{ fontSize: '1.1rem', color: 'var(--text)', margin: 0 }}>{record.title}</h3>
-                          {/* ✏️ 수정 / 🗑️ 삭제 버튼 */}
                           <div style={{ display: 'flex', gap: '6px' }}>
-                            <button 
-                              onClick={() => setEditingRecord(record)}
-                              style={{ backgroundColor: '#222', border: '1px solid var(--border)', color: '#ccc', padding: '4px 8px', borderRadius: '6px', fontSize: '0.75rem', cursor: 'pointer' }}
-                            >
-                              수정
-                            </button>
-                            <button 
-                              onClick={() => handleDeleteRecord(record.id)}
-                              style={{ backgroundColor: '#222', border: '1px solid #ff4d4d', color: '#ff4d4d', padding: '4px 8px', borderRadius: '6px', fontSize: '0.75rem', cursor: 'pointer' }}
-                            >
-                              삭제
-                            </button>
+                            <button onClick={() => setEditingRecord(record)} style={{ backgroundColor: 'var(--btn-bg)', border: '1px solid var(--border)', color: 'var(--text)', padding: '4px 8px', borderRadius: '6px', fontSize: '0.75rem', cursor: 'pointer' }}>수정</button>
+                            <button onClick={() => handleDeleteRecord(record.id)} style={{ backgroundColor: 'var(--btn-bg)', border: '1px solid #ff4d4d', color: '#ff4d4d', padding: '4px 8px', borderRadius: '6px', fontSize: '0.75rem', cursor: 'pointer' }}>삭제</button>
                           </div>
                         </div>
                       </div>
 
                       <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', marginTop: '12px' }}>
-                        {Object.entries(record.data || {}).map(([exName, sets]) => (
-                          <div key={exName} style={{ backgroundColor: '#121212', padding: '10px', borderRadius: '8px', border: '1px solid #222' }}>
-                            <div style={{ fontSize: '0.9rem', fontWeight: '600', color: 'var(--primary)', marginBottom: '6px' }}># {exName}</div>
-                            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px' }}>
-                              {sets.map((s, sIdx) => (
-                                <span key={sIdx} style={{ fontSize: '0.8rem', backgroundColor: s.done ? '#1a261a' : '#222', color: s.done ? '#4caf50' : '#aaa', padding: '4px 8px', borderRadius: '4px', border: s.done ? '1px solid #2e7d32' : '1px solid #333' }}>
-                                  {s.set}세트: {s.weight || 0}kg / {s.reps || 0}회 {s.done ? '✓' : ''}
-                                </span>
-                              ))}
+                        {Object.entries(record.data || {}).map(([exName, exObj]) => {
+                          const sets = Array.isArray(exObj) ? exObj : exObj.sets;
+                          const note = Array.isArray(exObj) ? null : exObj.note;
+                          return (
+                            <div key={exName} style={{ backgroundColor: 'var(--input-bg)', padding: '10px', borderRadius: '8px', border: '1px solid var(--border)' }}>
+                              <div style={{ fontSize: '0.9rem', fontWeight: '600', color: 'var(--primary)', marginBottom: '6px' }}># {exName}</div>
+                              {note && <div style={{ fontSize: '0.8rem', color: 'var(--sub)', fontStyle: 'italic', marginBottom: '6px' }}>메모: "{note}"</div>}
+                              <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px' }}>
+                                {sets.map((s, sIdx) => (
+                                  <span key={sIdx} style={{ fontSize: '0.8rem', backgroundColor: s.done ? 'var(--btn-bg)' : 'transparent', color: s.done ? 'var(--primary)' : 'var(--sub)', padding: '4px 8px', borderRadius: '4px', border: s.done ? '1px solid var(--primary)' : '1px solid var(--border)' }}>
+                                    {s.set}세트: {s.weight || 0}kg / {s.reps || 0}회 {s.done ? '✓' : ''}
+                                  </span>
+                                ))}
+                              </div>
                             </div>
-                          </div>
-                        ))}
+                          );
+                        })}
                       </div>
                     </div>
                   ))}
@@ -525,12 +469,11 @@ export default function Routine() {
       {isModalOpen && (
         <div style={{
           position: 'fixed', top: 0, left: 0, width: '100%', height: '100%',
-          backgroundColor: 'rgba(0, 0, 0, 0.8)', display: 'flex', justifyContent: 'center', alignItems: 'center', zIndex: 1000, padding: '20px'
+          backgroundColor: 'var(--modal-overlay)', display: 'flex', justifyContent: 'center', alignItems: 'center', zIndex: 1000, padding: '20px'
         }}>
           <div style={{
             backgroundColor: 'var(--surface)', padding: '30px', borderRadius: '16px',
-            width: '100%', maxWidth: '600px', border: '1px solid var(--border)', boxShadow: '0 10px 25px rgba(0,0,0,0.5)',
-            maxHeight: '90vh', overflowY: 'auto'
+            width: '100%', maxWidth: '600px', border: '1px solid var(--border)', boxShadow: '0 10px 25px rgba(0,0,0,0.5)', maxHeight: '90vh', overflowY: 'auto'
           }}>
             <h2 style={{ fontSize: '1.5rem', marginBottom: '20px', color: 'var(--text)' }}>
               {editingRoutineId ? '✏️ 루틴 수정하기' : '✨ 새 루틴 만들기'}
@@ -540,41 +483,20 @@ export default function Routine() {
               <div>
                 <label style={{ display: 'block', marginBottom: '6px', fontSize: '0.9rem', color: 'var(--sub)' }}>루틴 이름</label>
                 <input 
-                  type="text" 
-                  placeholder="예: 월요일 가슴/삼두 뿌시기"
-                  value={newTitle}
-                  onChange={(e) => setNewTitle(e.target.value)}
-                  style={{
-                    width: '100%', padding: '12px', borderRadius: '8px', backgroundColor: '#121212',
-                    border: '1px solid var(--border)', color: 'var(--text)', fontSize: '1rem'
-                  }}
+                  type="text" placeholder="예: 월요일 가슴/삼두 뿌시기" value={newTitle} onChange={(e) => setNewTitle(e.target.value)}
+                  style={{ width: '100%', padding: '12px', borderRadius: '8px', backgroundColor: 'var(--input-bg)', border: '1px solid var(--border)', color: 'var(--text)', fontSize: '1rem' }}
                 />
               </div>
 
               <div>
-                <label style={{ display: 'block', marginBottom: '6px', fontSize: '0.9rem', color: 'var(--sub)' }}>
-                  선택된 운동 ({selectedExercises.length}개)
-                </label>
-                <div style={{ 
-                  minHeight: '45px', padding: '8px', backgroundColor: '#121212', border: '1px solid var(--border)', 
-                  borderRadius: '8px', display: 'flex', flexWrap: 'wrap', gap: '6px', alignItems: 'center' 
-                }}>
+                <label style={{ display: 'block', marginBottom: '6px', fontSize: '0.9rem', color: 'var(--sub)' }}>선택된 운동 ({selectedExercises.length}개)</label>
+                <div style={{ minHeight: '45px', padding: '8px', backgroundColor: 'var(--input-bg)', border: '1px solid var(--border)', borderRadius: '8px', display: 'flex', flexWrap: 'wrap', gap: '6px', alignItems: 'center' }}>
                   {selectedExercises.length === 0 ? (
-                    <span style={{ color: '#666', fontSize: '0.85rem', paddingLeft: '4px' }}>아래 목록에서 운동을 터치하여 골라주세요</span>
+                    <span style={{ color: 'var(--sub)', fontSize: '0.85rem', paddingLeft: '4px' }}>아래 목록에서 운동을 터치하여 골라주세요</span>
                   ) : (
                     selectedExercises.map((ex, idx) => (
-                      <span key={idx} style={{ 
-                        backgroundColor: 'var(--primary)', color: '#fff', padding: '4px 10px', 
-                        borderRadius: '6px', fontSize: '0.8rem', display: 'flex', alignItems: 'center', gap: '6px' 
-                      }}>
-                        {ex} 
-                        <span 
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            toggleExercise(ex);
-                          }} 
-                          style={{ cursor: 'pointer', fontWeight: 'bold' }}
-                        >×</span>
+                      <span key={idx} style={{ backgroundColor: 'var(--primary)', color: '#fff', padding: '4px 10px', borderRadius: '6px', fontSize: '0.8rem', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                        {ex} <span onClick={(e) => { e.stopPropagation(); toggleExercise(ex); }} style={{ cursor: 'pointer', fontWeight: 'bold' }}>×</span>
                       </span>
                     ))
                   )}
@@ -583,31 +505,21 @@ export default function Routine() {
 
               <div>
                 <label style={{ display: 'block', marginBottom: '8px', fontSize: '0.9rem', color: 'var(--sub)' }}>운동 종목 검색 및 선택</label>
-                
                 <input 
-                  type="text"
-                  placeholder="🔍 찾으시는 운동 이름을 검색하세요"
-                  value={searchKeyword}
-                  onChange={(e) => setSearchKeyword(e.target.value)}
-                  style={{
-                    width: '100%', padding: '10px 14px', borderRadius: '8px', backgroundColor: '#121212',
-                    border: '1px solid var(--primary)', color: 'var(--text)', fontSize: '0.9rem', marginBottom: '12px'
-                  }}
+                  type="text" placeholder="🔍 찾으시는 운동 이름을 검색하세요" value={searchKeyword} onChange={(e) => setSearchKeyword(e.target.value)}
+                  style={{ width: '100%', padding: '10px 14px', borderRadius: '8px', backgroundColor: 'var(--input-bg)', border: '1px solid var(--primary)', color: 'var(--text)', fontSize: '0.9rem', marginBottom: '12px' }}
                 />
 
                 {!searchKeyword.trim() && (
                   <div style={{ display: 'flex', gap: '6px', marginBottom: '12px', overflowX: 'auto', paddingBottom: '4px' }}>
                     {Object.keys(EXERCISE_DATABASE).map((category) => (
                       <button
-                        key={category}
-                        type="button"
-                        onClick={() => setSelectedCategory(category)}
+                        key={category} type="button" onClick={() => setSelectedCategory(category)}
                         style={{
-                          padding: '8px 14px', borderRadius: '8px', fontWeight: '600', fontSize: '0.85rem', cursor: 'pointer',
-                          backgroundColor: selectedCategory === category ? 'var(--primary)' : '#222',
-                          color: selectedCategory === category ? '#fff' : '#aaa',
-                          border: selectedCategory === category ? 'none' : '1px solid var(--border)',
-                          whiteSpace: 'nowrap'
+                          padding: '8px 14px', borderRadius: '8px', fontWeight: '600', fontSize: '0.85rem', cursor: 'pointer', whiteSpace: 'nowrap',
+                          backgroundColor: selectedCategory === category ? 'var(--primary)' : 'var(--btn-bg)',
+                          color: selectedCategory === category ? '#fff' : 'var(--text)',
+                          border: selectedCategory === category ? 'none' : '1px solid var(--border)'
                         }}
                       >
                         {category}
@@ -616,28 +528,21 @@ export default function Routine() {
                   </div>
                 )}
 
-                <div style={{ 
-                  display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '8px', 
-                  maxHeight: '220px', overflowY: 'auto', padding: '4px' 
-                }}>
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '8px', maxHeight: '220px', overflowY: 'auto', padding: '4px' }}>
                   {currentExerciseList.length === 0 ? (
-                    <div style={{ gridColumn: 'span 2', textAlign: 'center', padding: '20px', color: '#777', fontSize: '0.85rem' }}>
-                      검색 결과가 없습니다.
-                    </div>
+                    <div style={{ gridColumn: 'span 2', textAlign: 'center', padding: '20px', color: 'var(--sub)', fontSize: '0.85rem' }}>검색 결과가 없습니다.</div>
                   ) : (
                     currentExerciseList.map((ex, index) => {
                       const isSelected = selectedExercises.includes(ex);
                       return (
                         <div
-                          key={index}
-                          onClick={() => toggleExercise(ex)}
+                          key={index} onClick={() => toggleExercise(ex)}
                           style={{
                             padding: '10px 12px', borderRadius: '8px', cursor: 'pointer', fontSize: '0.9rem',
-                            backgroundColor: isSelected ? '#331a14' : '#1a1a1a',
-                            border: isSelected ? '1px solid var(--primary)' : '1px solid #2c2c2c',
-                            color: isSelected ? 'var(--primary)' : '#ddd',
-                            display: 'flex', justifyContent: 'space-between', alignItems: 'center',
-                            transition: '0.15s'
+                            backgroundColor: isSelected ? 'var(--btn-bg)' : 'var(--input-bg)',
+                            border: isSelected ? '1px solid var(--primary)' : '1px solid var(--border)',
+                            color: isSelected ? 'var(--primary)' : 'var(--text)',
+                            display: 'flex', justifyContent: 'space-between', alignItems: 'center', transition: '0.15s'
                           }}
                         >
                           <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{ex}</span>
@@ -650,23 +555,8 @@ export default function Routine() {
               </div>
 
               <div style={{ display: 'flex', gap: '10px', marginTop: '10px' }}>
-                <button 
-                  type="button" 
-                  onClick={closeModal}
-                  style={{
-                    flex: 1, padding: '12px', borderRadius: '8px', backgroundColor: 'transparent',
-                    border: '1px solid var(--border)', color: 'var(--sub)', fontWeight: '600', cursor: 'pointer'
-                  }}
-                >
-                  취소
-                </button>
-                <button 
-                  type="submit" 
-                  style={{
-                    flex: 1, padding: '12px', borderRadius: '8px', backgroundColor: 'var(--primary)',
-                    border: 'none', color: '#fff', fontWeight: '600', cursor: 'pointer'
-                  }}
-                >
+                <button type="button" onClick={closeModal} style={{ flex: 1, padding: '12px', borderRadius: '8px', backgroundColor: 'transparent', border: '1px solid var(--border)', color: 'var(--sub)', fontWeight: '600', cursor: 'pointer' }}>취소</button>
+                <button type="submit" style={{ flex: 1, padding: '12px', borderRadius: '8px', backgroundColor: 'var(--primary)', border: 'none', color: '#fff', fontWeight: '600', cursor: 'pointer' }}>
                   {editingRoutineId ? '수정 완료' : '루틴 저장하기'}
                 </button>
               </div>
