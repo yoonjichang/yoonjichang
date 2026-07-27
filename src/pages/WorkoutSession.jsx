@@ -120,12 +120,11 @@ export default function WorkoutSession() {
     exercises: ['벤치프레스', '바벨 스쿼트', '데드리프트']
   };
 
-  const [exerciseList, setExerciseList] = useState(routine.exercises);
+  const [exerciseList, setExerciseList] = useState(routine.exercises || []);
 
-  // 📝 세트 타입(type) 속성이 추가된 데이터 구조
   const [workoutData, setWorkoutData] = useState(() => {
     const initialData = {};
-    routine.exercises.forEach((ex) => {
+    (routine.exercises || []).forEach((ex) => {
       initialData[ex] = {
         sets: [
           { set: 1, weight: '', reps: '', done: false, type: 'normal' },
@@ -156,13 +155,13 @@ export default function WorkoutSession() {
   const calculateTotalVolume = () => {
     let total = 0;
     Object.values(workoutData).forEach((exObj) => {
-      if (exObj && exObj.sets) {
-        exObj.sets.forEach((s) => {
-          const w = Number(s.weight) || 0;
-          const r = Number(s.reps) || 0;
-          total += w * r;
-        });
-      }
+      if (!exObj) return;
+      const setsArr = Array.isArray(exObj) ? exObj : (exObj.sets || []);
+      setsArr.forEach((s) => {
+        const w = Number(s?.weight) || 0;
+        const r = Number(s?.reps) || 0;
+        total += w * r;
+      });
     });
     return total;
   };
@@ -191,7 +190,7 @@ export default function WorkoutSession() {
       for (const record of history) {
         if (record.data && record.data[exName]) {
           const target = record.data[exName];
-          const setsArr = Array.isArray(target) ? target : target.sets;
+          const setsArr = Array.isArray(target) ? target : (target.sets || []);
           const noteStr = Array.isArray(target) ? '' : (target.note || '');
           return { date: record.date, sets: setsArr, note: noteStr };
         }
@@ -211,10 +210,10 @@ export default function WorkoutSession() {
 
     const clonedSets = lastRecord.sets.map((s, idx) => ({
       set: idx + 1,
-      weight: s.weight || '',
-      reps: s.reps || '',
+      weight: s?.weight || '',
+      reps: s?.reps || '',
       done: false,
-      type: s.type || 'normal' // 이전 기록의 타입도 함께 불러옴
+      type: s?.type || 'normal'
     }));
 
     setWorkoutData({
@@ -248,79 +247,104 @@ export default function WorkoutSession() {
 
   const handleInputChange = (exerciseName, setIndex, field, value) => {
     const updated = { ...workoutData };
-    updated[exerciseName].sets[setIndex][field] = value;
-    setWorkoutData(updated);
+    if (!updated[exerciseName]) return;
+    const setsArr = Array.isArray(updated[exerciseName]) ? updated[exerciseName] : updated[exerciseName].sets;
+    if (setsArr && setsArr[setIndex]) {
+      setsArr[setIndex][field] = value;
+      setWorkoutData(updated);
+    }
   };
 
   const handleNoteChange = (exerciseName, value) => {
     const updated = { ...workoutData };
-    updated[exerciseName].note = value;
+    if (!updated[exerciseName]) return;
+    if (Array.isArray(updated[exerciseName])) {
+      updated[exerciseName] = { sets: updated[exerciseName], note: value };
+    } else {
+      updated[exerciseName].note = value;
+    }
     setWorkoutData(updated);
   };
 
   const handleAddWeight = (exerciseName, setIndex, amount) => {
     const updated = { ...workoutData };
-    const currentWeight = Number(updated[exerciseName].sets[setIndex].weight) || 0;
-    const newWeight = Math.max(0, currentWeight + amount);
-    updated[exerciseName].sets[setIndex].weight = newWeight === 0 ? '' : newWeight.toString();
-    setWorkoutData(updated);
+    if (!updated[exerciseName]) return;
+    const setsArr = Array.isArray(updated[exerciseName]) ? updated[exerciseName] : updated[exerciseName].sets;
+    if (setsArr && setsArr[setIndex]) {
+      const currentWeight = Number(setsArr[setIndex].weight) || 0;
+      const newWeight = Math.max(0, currentWeight + amount);
+      setsArr[setIndex].weight = newWeight === 0 ? '' : newWeight.toString();
+      setWorkoutData(updated);
+    }
   };
 
-  // ⚡ 횟수(Reps) 간편 조절 함수 (-1, +1, +5)
   const handleAddReps = (exerciseName, setIndex, amount) => {
     const updated = { ...workoutData };
-    const currentReps = Number(updated[exerciseName].sets[setIndex].reps) || 0;
-    const newReps = Math.max(0, currentReps + amount);
-    updated[exerciseName].sets[setIndex].reps = newReps === 0 ? '' : newReps.toString();
-    setWorkoutData(updated);
+    if (!updated[exerciseName]) return;
+    const setsArr = Array.isArray(updated[exerciseName]) ? updated[exerciseName] : updated[exerciseName].sets;
+    if (setsArr && setsArr[setIndex]) {
+      const currentReps = Number(setsArr[setIndex].reps) || 0;
+      const newReps = Math.max(0, currentReps + amount);
+      setsArr[setIndex].reps = newReps === 0 ? '' : newReps.toString();
+      setWorkoutData(updated);
+    }
   };
 
-  // 🔄 세트 타입(웜업/드롭/실패/본세트) 변경 핸들러
   const toggleSetType = (exerciseName, setIndex) => {
     const types = ['normal', 'warmup', 'drop', 'failure'];
     const updated = { ...workoutData };
-    const currentType = updated[exerciseName].sets[setIndex].type || 'normal';
-    const nextIndex = (types.indexOf(currentType) + 1) % types.length;
-    updated[exerciseName].sets[setIndex].type = types[nextIndex];
-    setWorkoutData(updated);
+    if (!updated[exerciseName]) return;
+    const setsArr = Array.isArray(updated[exerciseName]) ? updated[exerciseName] : updated[exerciseName].sets;
+    if (setsArr && setsArr[setIndex]) {
+      const currentType = setsArr[setIndex].type || 'normal';
+      const nextIndex = (types.indexOf(currentType) + 1) % types.length;
+      setsArr[setIndex].type = types[nextIndex];
+      setWorkoutData(updated);
+    }
   };
 
   const toggleSetDone = (exerciseName, setIndex) => {
     const updated = { ...workoutData };
-    const targetSet = updated[exerciseName].sets[setIndex];
-    targetSet.done = !targetSet.done;
-    setWorkoutData(updated);
+    if (!updated[exerciseName]) return;
+    const setsArr = Array.isArray(updated[exerciseName]) ? updated[exerciseName] : updated[exerciseName].sets;
+    if (setsArr && setsArr[setIndex]) {
+      const targetSet = setsArr[setIndex];
+      targetSet.done = !targetSet.done;
+      setWorkoutData(updated);
 
-    if (targetSet.done) {
-      setTimeLeft(restTimeSetting);
-      setIsTimerActive(true);
+      if (targetSet.done) {
+        setTimeLeft(restTimeSetting);
+        setIsTimerActive(true);
+      }
     }
   };
 
   const addSet = (exerciseName) => {
     const updated = { ...workoutData };
-    const currentSets = updated[exerciseName].sets;
-    const newSetNumber = currentSets.length + 1;
-    const lastSet = currentSets[currentSets.length - 1] || { weight: '', reps: '', type: 'normal' };
+    if (!updated[exerciseName]) return;
+    const setsArr = Array.isArray(updated[exerciseName]) ? updated[exerciseName] : updated[exerciseName].sets;
+    const newSetNumber = setsArr.length + 1;
+    const lastSet = setsArr[setsArr.length - 1] || { weight: '', reps: '', type: 'normal' };
     
-    currentSets.push({
+    setsArr.push({
       set: newSetNumber,
       weight: lastSet.weight,
       reps: lastSet.reps,
       done: false,
-      type: 'normal' // 새로 추가되는 세트는 기본적으로 '본세트'
+      type: 'normal'
     });
     setWorkoutData(updated);
   };
 
   const removeSet = (exerciseName) => {
     const updated = { ...workoutData };
-    const currentSets = updated[exerciseName].sets;
-    if (currentSets.length <= 1) {
+    if (!updated[exerciseName]) return;
+    const setsArr = Array.isArray(updated[exerciseName]) ? updated[exerciseName] : updated[exerciseName].sets;
+    if (setsArr.length <= 1) {
       alert('최소 1개의 세트는 유지해야 합니다!');
       return;
     }
-    currentSets.pop();
+    setsArr.pop();
     setWorkoutData(updated);
   };
 
@@ -413,13 +437,12 @@ export default function WorkoutSession() {
     return `${mins}:${secs < 10 ? '0' : ''}${secs}`;
   };
 
-  // 🏷️ 세트 타입별 UI 색상 지정 함수
   const getTypeStyle = (type) => {
     switch(type) {
       case 'warmup': return { backgroundColor: '#ff9800', color: '#fff', border: 'none' };
       case 'drop': return { backgroundColor: '#2196f3', color: '#fff', border: 'none' };
       case 'failure': return { backgroundColor: '#f44336', color: '#fff', border: 'none' };
-      default: return { backgroundColor: '#222', color: '#888', border: '1px solid #444' };
+      default: return { backgroundColor: 'var(--btn-bg)', color: 'var(--sub)', border: '1px solid var(--border)' };
     }
   };
 
@@ -439,7 +462,7 @@ export default function WorkoutSession() {
       <div style={{
         backgroundColor: 'var(--surface)', border: '1px solid var(--border)', borderRadius: '14px',
         padding: '16px 20px', marginBottom: '30px', display: 'flex', justifyContent: 'space-between', alignItems: 'center',
-        boxShadow: '0 4px 12px rgba(0,0,0,0.3)', flexWrap: 'wrap', gap: '15px'
+        boxShadow: '0 4px 12px rgba(0,0,0,0.15)', flexWrap: 'wrap', gap: '15px'
       }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '20px', flexWrap: 'wrap' }}>
           <div>
@@ -449,14 +472,14 @@ export default function WorkoutSession() {
             </div>
           </div>
 
-          <div style={{ borderLeft: '1px solid #333', paddingLeft: '15px' }}>
+          <div style={{ borderLeft: '1px solid var(--border)', paddingLeft: '15px' }}>
             <div style={{ fontSize: '0.75rem', color: 'var(--sub)', marginBottom: '2px' }}>운동 경과 시간</div>
-            <div style={{ fontSize: '1.2rem', fontWeight: '700', color: '#fff' }}>
+            <div style={{ fontSize: '1.2rem', fontWeight: '700', color: 'var(--text)' }}>
               {formatWorkoutDuration(secondsElapsed)}
             </div>
           </div>
 
-          <div style={{ borderLeft: '1px solid #333', paddingLeft: '15px' }}>
+          <div style={{ borderLeft: '1px solid var(--border)', paddingLeft: '15px' }}>
             <div style={{ fontSize: '0.75rem', color: 'var(--sub)', marginBottom: '2px' }}>실시간 총 볼륨</div>
             <div style={{ fontSize: '1.2rem', fontWeight: '700', color: 'var(--primary)' }}>
               {calculateTotalVolume().toLocaleString()} kg
@@ -470,7 +493,7 @@ export default function WorkoutSession() {
             value={restTimeSetting}
             onChange={(e) => setRestTimeSetting(Number(e.target.value))}
             style={{
-              backgroundColor: '#121212', color: 'var(--text)', border: '1px solid var(--border)',
+              backgroundColor: 'var(--input-bg)', color: 'var(--text)', border: '1px solid var(--border)',
               padding: '8px 12px', borderRadius: '8px', fontSize: '0.9rem', fontWeight: '600', cursor: 'pointer'
             }}
           >
@@ -501,15 +524,14 @@ export default function WorkoutSession() {
         <div style={{ display: 'flex', gap: '10px' }}>
           <button 
             onClick={openAddExerciseModal}
-            style={{ background: '#222', border: '1px solid var(--border)', color: 'var(--text)', padding: '12px 16px', borderRadius: '10px', fontWeight: '600', cursor: 'pointer', fontSize: '0.9rem' }}
+            style={{ background: 'var(--btn-bg)', border: '1px solid var(--border)', color: 'var(--text)', padding: '12px 16px', borderRadius: '10px', fontWeight: '600', cursor: 'pointer', fontSize: '0.9rem' }}
           >
             + 운동 추가
           </button>
 
           <button 
             onClick={handleFinishWorkout}
-            className="btn"
-            style={{ background: 'var(--primary)', color: '#fff', border: 'none', padding: '12px 20px' }}
+            style={{ background: 'var(--primary)', color: '#fff', border: 'none', padding: '12px 20px', borderRadius: '10px', fontWeight: '700', cursor: 'pointer' }}
           >
             운동 완료하기 🎉
           </button>
@@ -520,7 +542,9 @@ export default function WorkoutSession() {
       <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
         {exerciseList.map((exName, idx) => {
           const lastRecord = getLastWorkoutRecordForExercise(exName);
-          const currentExData = workoutData[exName] || { sets: [], note: '' };
+          const rawExData = workoutData[exName];
+          const currentSets = Array.isArray(rawExData) ? rawExData : (rawExData?.sets || []);
+          const currentNote = Array.isArray(rawExData) ? '' : (rawExData?.note || '');
 
           return (
             <div 
@@ -539,34 +563,34 @@ export default function WorkoutSession() {
                   </h3>
                   
                   <div style={{ display: 'flex', gap: '4px' }}>
-                    <button onClick={() => moveExerciseUp(idx)} disabled={idx === 0} style={{ backgroundColor: '#222', border: '1px solid #333', color: idx === 0 ? '#444' : '#ccc', padding: '4px 8px', borderRadius: '6px', fontSize: '0.75rem', cursor: idx === 0 ? 'not-allowed' : 'pointer' }}>▲ 위로</button>
-                    <button onClick={() => moveExerciseDown(idx)} disabled={idx === exerciseList.length - 1} style={{ backgroundColor: '#222', border: '1px solid #333', color: idx === exerciseList.length - 1 ? '#444' : '#ccc', padding: '4px 8px', borderRadius: '6px', fontSize: '0.75rem', cursor: idx === exerciseList.length - 1 ? 'not-allowed' : 'pointer' }}>▼ 아래로</button>
+                    <button onClick={() => moveExerciseUp(idx)} disabled={idx === 0} style={{ backgroundColor: 'var(--btn-bg)', border: '1px solid var(--border)', color: idx === 0 ? 'var(--sub)' : 'var(--text)', padding: '4px 8px', borderRadius: '6px', fontSize: '0.75rem', cursor: idx === 0 ? 'not-allowed' : 'pointer' }}>▲ 위로</button>
+                    <button onClick={() => moveExerciseDown(idx)} disabled={idx === exerciseList.length - 1} style={{ backgroundColor: 'var(--btn-bg)', border: '1px solid var(--border)', color: idx === exerciseList.length - 1 ? 'var(--sub)' : 'var(--text)', padding: '4px 8px', borderRadius: '6px', fontSize: '0.75rem', cursor: idx === exerciseList.length - 1 ? 'not-allowed' : 'pointer' }}>▼ 아래로</button>
                   </div>
                 </div>
                 
                 <div style={{ display: 'flex', gap: '8px' }}>
                   <button onClick={() => openReplaceExerciseModal(exName)} style={{ background: 'transparent', border: '1px solid var(--border)', color: 'var(--sub)', padding: '6px 10px', borderRadius: '8px', fontSize: '0.8rem', cursor: 'pointer' }}>운동 교체</button>
                   <button onClick={() => removeExercise(exName)} style={{ background: 'transparent', border: '1px solid #ff4d4d', color: '#ff4d4d', padding: '6px 10px', borderRadius: '8px', fontSize: '0.8rem', cursor: 'pointer' }}>운동 삭제</button>
-                  <button onClick={() => removeSet(exName)} style={{ background: 'transparent', border: '1px solid #555', color: '#aaa', padding: '6px 10px', borderRadius: '8px', fontSize: '0.8rem', cursor: 'pointer' }}>- 세트</button>
+                  <button onClick={() => removeSet(exName)} style={{ background: 'transparent', border: '1px solid var(--border)', color: 'var(--sub)', padding: '6px 10px', borderRadius: '8px', fontSize: '0.8rem', cursor: 'pointer' }}>- 세트</button>
                   <button onClick={() => addSet(exName)} style={{ background: 'transparent', border: '1px solid var(--border)', color: 'var(--sub)', padding: '6px 10px', borderRadius: '8px', fontSize: '0.8rem', cursor: 'pointer' }}>+ 세트</button>
                 </div>
               </div>
 
               {lastRecord && (
                 <div style={{ 
-                  backgroundColor: '#1a1a1a', border: '1px dashed #333', borderRadius: '8px', 
+                  backgroundColor: 'var(--input-bg)', border: '1px dashed var(--border)', borderRadius: '8px', 
                   padding: '10px 14px', marginBottom: '14px', fontSize: '0.85rem', color: 'var(--sub)',
                   display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '10px'
                 }}>
                   <div>
                     <span style={{ color: 'var(--primary)', fontWeight: '700', marginRight: '8px' }}>📌 직전 기록 ({lastRecord.date}):</span>
                     {lastRecord.sets.map((s, sIdx) => (
-                      <span key={sIdx} style={{ backgroundColor: '#222', padding: '2px 6px', borderRadius: '4px', color: '#ccc', marginRight: '4px', display: 'inline-block', marginBottom: '2px' }}>
+                      <span key={sIdx} style={{ backgroundColor: 'var(--btn-bg)', padding: '2px 6px', borderRadius: '4px', color: 'var(--text)', marginRight: '4px', display: 'inline-block', marginBottom: '2px' }}>
                         {s.set}세트: {s.weight || 0}kg / {s.reps || 0}회
                       </span>
                     ))}
                     {lastRecord.note && (
-                      <div style={{ fontSize: '0.8rem', color: '#aaa', fontStyle: 'italic', marginTop: '4px' }}>
+                      <div style={{ fontSize: '0.8rem', color: 'var(--sub)', fontStyle: 'italic', marginTop: '4px' }}>
                         메모: "{lastRecord.note}"
                       </div>
                     )}
@@ -582,13 +606,12 @@ export default function WorkoutSession() {
                 <input 
                   type="text"
                   placeholder="📝 오늘 이 운동에 대한 메모를 남겨보세요 (예: 그립 넓게, 자극 좋음)"
-                  value={currentExData.note}
+                  value={currentNote}
                   onChange={(e) => handleNoteChange(exName, e.target.value)}
-                  style={{ width: '100%', padding: '8px 12px', borderRadius: '6px', backgroundColor: '#181818', border: '1px solid #333', color: '#ddd', fontSize: '0.85rem' }}
+                  style={{ width: '100%', padding: '8px 12px', borderRadius: '6px', backgroundColor: 'var(--input-bg)', border: '1px solid var(--border)', color: 'var(--text)', fontSize: '0.85rem' }}
                 />
               </div>
 
-              {/* 💡 그리드 비율을 중량/횟수가 대칭이 되도록 조정 (70px 1fr 1fr 70px) */}
               <div style={{ 
                 display: 'grid', gridTemplateColumns: '70px 1fr 1fr 70px', gap: '12px', 
                 marginBottom: '10px', fontSize: '0.85rem', color: 'var(--sub)', fontWeight: '600', textAlign: 'center' 
@@ -600,19 +623,18 @@ export default function WorkoutSession() {
               </div>
 
               <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-                {currentExData.sets?.map((setItem, setIdx) => (
+                {currentSets.map((setItem, setIdx) => (
                   <div 
                     key={setIdx}
                     style={{ 
                       display: 'grid', gridTemplateColumns: '70px 1fr 1fr 70px', gap: '12px', alignItems: 'center',
-                      backgroundColor: setItem.done ? '#1a261a' : '#121212', 
-                      padding: '12px', borderRadius: '8px', border: setItem.done ? '1px solid #2e7d32' : '1px solid var(--border)',
+                      backgroundColor: setItem.done ? 'var(--btn-bg)' : 'var(--input-bg)', 
+                      padding: '12px', borderRadius: '8px', border: setItem.done ? '1px solid var(--primary)' : '1px solid var(--border)',
                       transition: '0.2s'
                     }}
                   >
-                    {/* 세트 번호 및 🏷️ 세트 타입(웜업/드롭/실패) 지정 뱃지 */}
                     <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '6px' }}>
-                      <div style={{ fontWeight: '700', color: setItem.done ? '#4caf50' : 'var(--text)' }}>
+                      <div style={{ fontWeight: '700', color: setItem.done ? 'var(--primary)' : 'var(--text)' }}>
                         {setItem.set}세트
                       </div>
                       <button 
@@ -621,41 +643,34 @@ export default function WorkoutSession() {
                           fontSize: '0.65rem', padding: '3px 6px', borderRadius: '4px', cursor: 'pointer', fontWeight: '700',
                           ...getTypeStyle(setItem.type)
                         }}
-                        title="클릭하여 세트 타입 변경"
                       >
                         {getTypeLabel(setItem.type)}
                       </button>
                     </div>
 
-                    {/* 중량 입력 및 간편 조절 버튼 */}
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
                       <input 
-                        type="number" 
-                        placeholder="0"
-                        value={setItem.weight}
+                        type="number" placeholder="0" value={setItem.weight}
                         onChange={(e) => handleInputChange(exName, setIdx, 'weight', e.target.value)}
-                        style={{ width: '100%', padding: '8px', borderRadius: '6px', backgroundColor: '#1a1a1a', border: '1px solid #333', color: '#fff', textAlign: 'center', fontSize: '1rem', fontWeight: '600' }}
+                        style={{ width: '100%', padding: '8px', borderRadius: '6px', backgroundColor: 'var(--surface)', border: '1px solid var(--border)', color: 'var(--text)', textAlign: 'center', fontSize: '1rem', fontWeight: '600' }}
                       />
                       <div style={{ display: 'flex', justifyContent: 'space-between', gap: '4px' }}>
-                        <button type="button" onClick={() => handleAddWeight(exName, setIdx, -5)} style={{ flex: 1, backgroundColor: '#222', border: '1px solid #333', color: '#aaa', fontSize: '0.7rem', padding: '3px 0', borderRadius: '4px', cursor: 'pointer' }}>-5</button>
-                        <button type="button" onClick={() => handleAddWeight(exName, setIdx, 5)} style={{ flex: 1, backgroundColor: '#222', border: '1px solid #333', color: 'var(--primary)', fontSize: '0.7rem', padding: '3px 0', borderRadius: '4px', cursor: 'pointer', fontWeight: '700' }}>+5</button>
-                        <button type="button" onClick={() => handleAddWeight(exName, setIdx, 10)} style={{ flex: 1, backgroundColor: '#222', border: '1px solid #333', color: 'var(--primary)', fontSize: '0.7rem', padding: '3px 0', borderRadius: '4px', cursor: 'pointer', fontWeight: '700' }}>+10</button>
+                        <button type="button" onClick={() => handleAddWeight(exName, setIdx, -5)} style={{ flex: 1, backgroundColor: 'var(--btn-bg)', border: '1px solid var(--border)', color: 'var(--sub)', fontSize: '0.7rem', padding: '3px 0', borderRadius: '4px', cursor: 'pointer' }}>-5</button>
+                        <button type="button" onClick={() => handleAddWeight(exName, setIdx, 5)} style={{ flex: 1, backgroundColor: 'var(--btn-bg)', border: '1px solid var(--border)', color: 'var(--primary)', fontSize: '0.7rem', padding: '3px 0', borderRadius: '4px', cursor: 'pointer', fontWeight: '700' }}>+5</button>
+                        <button type="button" onClick={() => handleAddWeight(exName, setIdx, 10)} style={{ flex: 1, backgroundColor: 'var(--btn-bg)', border: '1px solid var(--border)', color: 'var(--primary)', fontSize: '0.7rem', padding: '3px 0', borderRadius: '4px', cursor: 'pointer', fontWeight: '700' }}>+10</button>
                       </div>
                     </div>
 
-                    {/* 횟수 입력 및 ⚡ 간편 조절 버튼 추가됨 (-1, +1, +5) */}
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
                       <input 
-                        type="number" 
-                        placeholder="0"
-                        value={setItem.reps}
+                        type="number" placeholder="0" value={setItem.reps}
                         onChange={(e) => handleInputChange(exName, setIdx, 'reps', e.target.value)}
-                        style={{ width: '100%', padding: '8px', borderRadius: '6px', backgroundColor: '#1a1a1a', border: '1px solid #333', color: '#fff', textAlign: 'center', fontSize: '1rem', fontWeight: '600' }}
+                        style={{ width: '100%', padding: '8px', borderRadius: '6px', backgroundColor: 'var(--surface)', border: '1px solid var(--border)', color: 'var(--text)', textAlign: 'center', fontSize: '1rem', fontWeight: '600' }}
                       />
                       <div style={{ display: 'flex', justifyContent: 'space-between', gap: '4px' }}>
-                        <button type="button" onClick={() => handleAddReps(exName, setIdx, -1)} style={{ flex: 1, backgroundColor: '#222', border: '1px solid #333', color: '#aaa', fontSize: '0.7rem', padding: '3px 0', borderRadius: '4px', cursor: 'pointer' }}>-1</button>
-                        <button type="button" onClick={() => handleAddReps(exName, setIdx, 1)} style={{ flex: 1, backgroundColor: '#222', border: '1px solid #333', color: 'var(--primary)', fontSize: '0.7rem', padding: '3px 0', borderRadius: '4px', cursor: 'pointer', fontWeight: '700' }}>+1</button>
-                        <button type="button" onClick={() => handleAddReps(exName, setIdx, 5)} style={{ flex: 1, backgroundColor: '#222', border: '1px solid #333', color: 'var(--primary)', fontSize: '0.7rem', padding: '3px 0', borderRadius: '4px', cursor: 'pointer', fontWeight: '700' }}>+5</button>
+                        <button type="button" onClick={() => handleAddReps(exName, setIdx, -1)} style={{ flex: 1, backgroundColor: 'var(--btn-bg)', border: '1px solid var(--border)', color: 'var(--sub)', fontSize: '0.7rem', padding: '3px 0', borderRadius: '4px', cursor: 'pointer' }}>-1</button>
+                        <button type="button" onClick={() => handleAddReps(exName, setIdx, 1)} style={{ flex: 1, backgroundColor: 'var(--btn-bg)', border: '1px solid var(--border)', color: 'var(--primary)', fontSize: '0.7rem', padding: '3px 0', borderRadius: '4px', cursor: 'pointer', fontWeight: '700' }}>+1</button>
+                        <button type="button" onClick={() => handleAddReps(exName, setIdx, 5)} style={{ flex: 1, backgroundColor: 'var(--btn-bg)', border: '1px solid var(--border)', color: 'var(--primary)', fontSize: '0.7rem', padding: '3px 0', borderRadius: '4px', cursor: 'pointer', fontWeight: '700' }}>+5</button>
                       </div>
                     </div>
 
@@ -664,8 +679,8 @@ export default function WorkoutSession() {
                         onClick={() => toggleSetDone(exName, setIdx)}
                         style={{ 
                           width: '100%', padding: '12px 0', borderRadius: '6px', cursor: 'pointer', fontWeight: '700',
-                          backgroundColor: setItem.done ? '#4caf50' : '#2a2a2a',
-                          color: setItem.done ? '#fff' : '#888',
+                          backgroundColor: setItem.done ? 'var(--primary)' : 'var(--btn-bg)',
+                          color: '#fff',
                           border: 'none', transition: '0.2s'
                         }}
                       >
@@ -680,11 +695,11 @@ export default function WorkoutSession() {
         })}
       </div>
 
-      {/* 운동 추가/교체 모달 생략 (위와 동일) */}
+      {/* 모달 생략 (동일) */}
       {isPickerModalOpen && (
         <div style={{
           position: 'fixed', top: 0, left: 0, width: '100%', height: '100%',
-          backgroundColor: 'rgba(0, 0, 0, 0.8)', display: 'flex', justifyContent: 'center', alignItems: 'center', zIndex: 1000, padding: '20px'
+          backgroundColor: 'var(--modal-overlay)', display: 'flex', justifyContent: 'center', alignItems: 'center', zIndex: 1000, padding: '20px'
         }}>
           <div style={{
             backgroundColor: 'var(--surface)', padding: '30px', borderRadius: '16px',
@@ -695,21 +710,18 @@ export default function WorkoutSession() {
               <h2 style={{ fontSize: '1.4rem', color: 'var(--text)', margin: 0 }}>
                 {pickerMode === 'add' ? '➕ 운동 추가하기' : '🔄 운동 교체하기'}
               </h2>
-              <button onClick={() => setIsPickerModalOpen(false)} style={{ background: 'transparent', border: 'none', color: '#888', fontSize: '1.2rem', cursor: 'pointer' }}>✕</button>
+              <button onClick={() => setIsPickerModalOpen(false)} style={{ background: 'transparent', border: 'none', color: 'var(--sub)', fontSize: '1.2rem', cursor: 'pointer' }}>✕</button>
             </div>
 
             <div style={{ display: 'flex', gap: '6px', marginBottom: '16px', overflowX: 'auto', paddingBottom: '4px' }}>
               {Object.keys(EXERCISE_DATABASE).map((category) => (
                 <button
-                  key={category}
-                  type="button"
-                  onClick={() => setSelectedCategory(category)}
+                  key={category} type="button" onClick={() => setSelectedCategory(category)}
                   style={{
-                    padding: '8px 14px', borderRadius: '8px', fontWeight: '600', fontSize: '0.85rem', cursor: 'pointer',
-                    backgroundColor: selectedCategory === category ? 'var(--primary)' : '#222',
-                    color: selectedCategory === category ? '#fff' : '#aaa',
-                    border: selectedCategory === category ? 'none' : '1px solid var(--border)',
-                    whiteSpace: 'nowrap'
+                    padding: '8px 14px', borderRadius: '8px', fontWeight: '600', fontSize: '0.85rem', cursor: 'pointer', whiteSpace: 'nowrap',
+                    backgroundColor: selectedCategory === category ? 'var(--primary)' : 'var(--btn-bg)',
+                    color: selectedCategory === category ? '#fff' : 'var(--text)',
+                    border: selectedCategory === category ? 'none' : '1px solid var(--border)'
                   }}
                 >
                   {category}
@@ -720,15 +732,12 @@ export default function WorkoutSession() {
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '8px', maxHeight: '300px', overflowY: 'auto', padding: '4px' }}>
               {EXERCISE_DATABASE[selectedCategory].map((ex, index) => (
                 <div
-                  key={index}
-                  onClick={() => handleSelectExerciseFromPicker(ex)}
+                  key={index} onClick={() => handleSelectExerciseFromPicker(ex)}
                   style={{
                     padding: '12px', borderRadius: '8px', cursor: 'pointer', fontSize: '0.9rem',
-                    backgroundColor: '#1a1a1a', border: '1px solid #2c2c2c', color: '#ddd',
+                    backgroundColor: 'var(--input-bg)', border: '1px solid var(--border)', color: 'var(--text)',
                     display: 'flex', justifyContent: 'space-between', alignItems: 'center', transition: '0.15s'
                   }}
-                  onMouseOver={(e) => e.currentTarget.style.borderColor = 'var(--primary)'}
-                  onMouseOut={(e) => e.currentTarget.style.borderColor = '#2c2c2c'}
                 >
                   <span>{ex}</span>
                   <span style={{ fontSize: '0.8rem', color: 'var(--primary)', fontWeight: '700' }}>선택 ➔</span>
