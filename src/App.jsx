@@ -1,5 +1,6 @@
 import React from 'react';
 import { HashRouter, Routes, Route } from 'react-router-dom';
+import Home from './pages/Home'; // 💡 사라졌던 Home 컴포넌트 연결!
 import Routine from './pages/Routine';
 import WorkoutSession from './pages/WorkoutSession';
 
@@ -7,13 +8,14 @@ export default function App() {
   return (
     <HashRouter>
       <Routes>
-        {/* 정상적인 주소들 */}
-        <Route path="/" element={<Routine />} />
+        {/* 접속 시 메인 홈 화면(Home.jsx)을 보여줍니다 */}
+        <Route path="/" element={<Home />} />
+        <Route path="/home" element={<Home />} />
         <Route path="/routine" element={<Routine />} />
         <Route path="/workout" element={<WorkoutSession />} />
         
-        {/* 🚨 주소를 찾지 못해 길을 잃으면 무조건 홈 화면(Routine)으로 강제 이동! */}
-        <Route path="*" element={<Routine />} />
+        {/* 주소를 찾지 못하면 기본적으로 Home 화면으로 이동합니다 */}
+        <Route path="*" element={<Home />} />
       </Routes>
     </HashRouter>
   );
